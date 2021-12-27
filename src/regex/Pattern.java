@@ -946,7 +946,7 @@ public final class Pattern
      * The starting point of state machine for the find operation.  This allows
      * a match to start anywhere in the input.
      */
-    transient Node root;
+    public transient Node root;
 
     /**
      * The root of object tree for a match operation.  The pattern is matched
@@ -3401,7 +3401,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
      * method as appropriate. This class is an accepting node, so its match()
      * always returns true.
      */
-    static class Node extends Object {
+    public static class Node extends Object {
         Node next;
         Node() {
             next = Pattern.accept;
@@ -3769,7 +3769,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
      * Abstract node class to match one character satisfying some
      * boolean property.
      */
-    private static abstract class CharProperty extends Node {
+    static abstract class CharProperty extends Node {
         abstract boolean isSatisfiedBy(int ch);
         CharProperty complement() {
             return new Pattern.CharProperty() {
