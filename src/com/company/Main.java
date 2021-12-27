@@ -15,7 +15,6 @@ public class Main {
         String regex = "(x|y){3,3}";
         Pattern p = Pattern.compile(regex);
         Analyzer a = new Analyzer(p);
-        System.out.println(Analyzer.calcLen(p.root));
         System.out.println(p.matcher("123-456-7890").matches());
 
         // 1. Len
