@@ -1,16 +1,20 @@
 package regex;
 
+import javafx.util.Pair;
+
 import java.util.*;
 
 /**
  * @author SuperMaxine
  */
-public class Analyzer {
+public class Analyzer<comparePathLength> {
     public static class Path {
         public boolean reachEnd;
         public ArrayList<Set<Integer>> path;
         public ArrayList<Set<Integer>> negPath; // negPath长于path是可以的,实际上最末尾的negPath并没有生效，直接扣会导致扣多，但结果至少是正确的
         public ArrayList<Set<Integer>> posPath; // posPath必须短于或等于path，因为如果长于path则不满足最末尾的posPath，导致不能被匹配
+        public ArrayList<dividePoint> dividePoints;
+        Map<String, Pair<String, Integer>> unmeetBranchConn;
         Map<String, Integer> cycleTimes;
 
         public Path() {
@@ -19,6 +23,8 @@ public class Analyzer {
             this.cycleTimes = new HashMap<>();
             this.negPath = new ArrayList<>();
             this.posPath = new ArrayList<>();
+            this.dividePoints = new ArrayList<>();
+            this.unmeetBranchConn = new HashMap<>();
         }
         public Path(Path p) {
             this.reachEnd = p.reachEnd;
@@ -26,6 +32,20 @@ public class Analyzer {
             this.cycleTimes = new HashMap<>(p.cycleTimes);
             this.negPath = new ArrayList<>(p.negPath);
             this.posPath = new ArrayList<>(p.posPath);
+            this.dividePoints = new ArrayList<>(p.dividePoints);
+            this.unmeetBranchConn = new HashMap<>(p.unmeetBranchConn);
+        }
+
+        private static class dividePoint {
+            public String node;
+            public int begin;
+            public int end;
+
+            public dividePoint(String node, int begin, int end) {
+                this.node = node;
+                this.begin = begin;
+                this.end = end;
+            }
         }
     }
 
@@ -105,6 +125,11 @@ public class Analyzer {
 
             // 最后将所有结果送入next
             for(Path p : tmpPath1){
+                // 为每一条path添加dividePoint
+                if(p.path.size() != path.path.size()) {
+                    p.dividePoints.add(new Path.dividePoint(root.toString(), path.path.size(), p.path.size()));
+                }
+
                 result.addAll(returnPaths(root.next, p, maxLength));
             }
         } else if (root instanceof Pattern.Curly) {
@@ -132,6 +157,11 @@ public class Analyzer {
 
             // 最后将所有结果送入next
             for(Path p : tmpPath1){
+                // 为每一条path添加dividePoint
+                if(p.path.size() != path.path.size()) {
+                    p.dividePoints.add(new Path.dividePoint(root.toString(), path.path.size(), p.path.size()));
+                }
+
                 result.addAll(returnPaths(root.next, p, maxLength));
             }
         } else if (root instanceof Pattern.GroupCurly) {
@@ -159,22 +189,36 @@ public class Analyzer {
 
             // 最后将所有结果送入next
             for(Path p : tmpPath1){
+                // 为每一条path添加dividePoint
+                if(p.path.size() != path.path.size()) {
+                    p.dividePoints.add(new Path.dividePoint(root.toString(), path.path.size(), p.path.size()));
+                }
+
                 result.addAll(returnPaths(root.next, p, maxLength));
             }
         }
 
         // 2. 分支
         else if(root instanceof Pattern.Branch){
+            // 记录unmatchedBranchConn
+            path.unmeetBranchConn.put(((Pattern.Branch) root).conn.toString(), new Pair<>(root.toString(), path.path.size()));
+
             for(Pattern.Node node : ((Pattern.Branch)root).atoms){
                 if (node == null){
                     continue;
                 }
                 result.addAll(returnPaths(node, path, maxLength));
             }
+        } else if (root instanceof Pattern.BranchConn) {
+            // 完成dividePoint
+            Pair<String, Integer> unmeetBranchConn = path.unmeetBranchConn.get(root.toString());
+            if(unmeetBranchConn.getValue() != path.path.size()) {
+                path.dividePoints.add(new Path.dividePoint(unmeetBranchConn.getKey(), unmeetBranchConn.getValue(), path.path.size()));
+            }
+            // 删除unmatchedBranchConn
+            path.unmeetBranchConn.remove(root.toString());
 
-            // for(Path p : tmpPath){
-            //     tmpPath.addAll(returnPaths(root.next, p, maxLength));
-            // }
+            result.addAll(returnPaths(root.next, path, maxLength));
         } else if(root instanceof Pattern.Ques){
             // TODO: 几种type并未区分
             // 1. 0或1

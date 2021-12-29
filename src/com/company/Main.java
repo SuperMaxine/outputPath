@@ -23,11 +23,11 @@ public class Main {
 
 
         // String regex = "a(ba*)+$";
-        // String regex = "^(ab|a|b)+$";
+        String regex = "^(a|b|c)*(x|y|z)+$";
         // String regex = "\\b.*\\b";
         // String regex = "^\\s+|\\s+$";
 
-        String regex = "(\\d)+(?<=12)";
+        // String regex = "(\\d)+(?<=12)";
         // String regex = "(?!a)[ab]+";
         Pattern p = Pattern.compile(regex);
         Pattern.printObjectTree(p.root);
