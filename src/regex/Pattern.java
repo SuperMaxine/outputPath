@@ -25,6 +25,7 @@
 
 package regex;
 
+import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.function.Predicate;
@@ -1731,7 +1732,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
     /**
      * Used to print out a subtree of the Pattern to help with debugging.
      */
-    private static void printObjectTree(Node node) {
+    public static void printObjectTree(Node node) {
         while(node != null) {
             if (node instanceof Prolog) {
                 System.out.println(node);
@@ -3770,6 +3771,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
      * boolean property.
      */
     static abstract class CharProperty extends Node {
+        public Set<Integer> charSet = new HashSet<>();
         abstract boolean isSatisfiedBy(int ch);
         CharProperty complement() {
             return new Pattern.CharProperty() {
