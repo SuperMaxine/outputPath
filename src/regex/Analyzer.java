@@ -2,6 +2,7 @@ package regex;
 
 import javafx.util.Pair;
 
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -45,6 +46,88 @@ public class Analyzer<comparePathLength> {
                 this.node = node;
                 this.begin = begin;
                 this.end = end;
+            }
+        }
+    }
+
+    public static class Path {
+        ArrayList<Set<Integer>> path;
+        ArrayList<Path> Branches;
+        ArrayList<Pattern.Node> loopStack;
+        int currentSize;
+
+        public enum flag
+        {
+            copy, inherit;
+        }
+
+        public Path() {
+            this.path = new ArrayList<>();
+            this.Branches = new ArrayList<>();
+            this.loopStack = new ArrayList<>();
+            this.currentSize = 0;
+        }
+
+        public Path(Path p, flag f) {
+            if (f == flag.copy) {
+                this.path = new ArrayList<>(p.path);
+                this.Branches = new ArrayList<>(p.Branches);
+                this.loopStack = new ArrayList<>(p.loopStack);
+                this.currentSize = p.currentSize;
+            } else if (f == flag.inherit) {
+                this.path = new ArrayList<>();
+                this.Branches = new ArrayList<>();
+                this.loopStack = new ArrayList<>(p.loopStack);
+                this.currentSize = p.currentSize;
+            }
+        }
+
+        public void add(Set<Integer> set) {
+            this.path.add(set);
+            this.currentSize += 1;
+        }
+
+        public void addAll(ArrayList<Set<Integer>> sets) {
+            this.path.addAll(sets);
+            this.currentSize += sets.size();
+        }
+
+        public void addChild(Path p) {
+            if (p.path.size() == 0) {
+                this.Branches.addAll(p.Branches);
+            } else {
+                this.Branches.add(p);
+            }
+        }
+    }
+
+    public static Path returnPaths(Pattern.Node root, Path parentPath, int maxLength){
+        if (root == null) {
+            if (parentPath.loopStack.size() == 0) {
+                return new Path();
+            } else {
+                returnPaths(parentPath.loopStack.get(parentPath.loopStack.size() - 1), parentPath, maxLength);
+            }
+        } else if (parentPath.currentSize > maxLength || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+            return new Path();
+        }else if (root instanceof Pattern.LastNode){
+            return new Path();
+        }
+
+        // 需要特殊处理的节点（下一个节点不在next或者不止在next）
+        // 1. 循环
+        if (root instanceof Pattern.Prolog){
+            returnPaths(((Pattern.Prolog)root).loop, parentPath, maxLength);
+        } else if (root instanceof Pattern.Loop){
+            // 前提是GroupTail到Loop的通路被打断，得益于Prolog一定会包裹在Loop外，GroupTail的next节点若是Loop，则一定是回到循环开头
+
+            // 如果loopStack中没有root，则说明是第一次进入本节点，则将root加入loopStack
+            if (parentPath.loopStack.size() == 0 || !parentPath.loopStack.get(parentPath.loopStack.size() - 1).equals(root)) {
+                ((Pattern.Loop) root).visitTimes += 1;
+                parentPath.loopStack.add(root);
+            } else if (parentPath.loopStack.get(parentPath.loopStack.size() - 1).equals(root)) {
+                // 如果loopStack中有root，且root的值为1，则说明是第一次进入本节点，则将root的值加1
+                ((Pattern.Loop) root).visitTimes += 1;
             }
         }
     }
@@ -104,7 +187,7 @@ public class Analyzer<comparePathLength> {
         if (root instanceof Pattern.Prolog) {
             result.addAll(oldreturnPaths(((Pattern.Prolog)root).loop, path, maxLength));
         } else if (root instanceof Pattern.Loop) {
-            // 前提是GroupTail到Loop的通路被打断
+            // 前提是GroupTail到Loop的通路被打断，得益于Prolog一定会包裹在Loop外，GroupTail的next节点若是Loop，则一定是回到循环开头
 
             // 在前往next节点前，本节点的所有结果放在tmpPath1
             ArrayList<oldPath> tmpPath1 = new ArrayList<>();
@@ -369,6 +452,10 @@ public class Analyzer<comparePathLength> {
 
         return result;
     }
+
+
+
+
 
     public static Comparator<oldPath> comparePathLength = new Comparator<oldPath>() {
         @Override

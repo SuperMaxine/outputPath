@@ -4764,6 +4764,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
         int countIndex; // local count index in matcher locals
         int beginIndex; // group beginning index
         int cmin, cmax;
+        int visitTimes = 0;
         Loop(int countIndex, int beginIndex) {
             this.countIndex = countIndex;
             this.beginIndex = beginIndex;

@@ -2,9 +2,7 @@ package com.company;
 
 import regex.*;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * @author SuperMaxine
