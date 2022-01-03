@@ -2,12 +2,222 @@ package regex;
 
 import javafx.util.Pair;
 
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
  * @author SuperMaxine
  */
-public class Analyzer<comparePathLength> {
+public class Analyzer {
+    int maxLength;
+    Pattern pattern;
+    Path root;
+    public Analyzer(Pattern pattern, int maxLength) {
+        this.pattern = pattern;
+        this.maxLength = maxLength;
+        root = new Path(0);
+        returnPaths(pattern.root, root);
+    }
+
+    class Path{
+        ArrayList<Set<Integer>> path;
+        int currentSize;
+        ArrayList<Path> nextPaths;
+        boolean reachedEnd;
+
+        Path(int size){
+            path = new ArrayList<>();
+            currentSize = size;
+            nextPaths = new ArrayList<>();
+            reachedEnd = false;
+        }
+
+        Path(Path path){
+            this.path = new ArrayList<>(path.path);
+            this.currentSize = path.currentSize;
+            this.nextPaths = new ArrayList<>();
+            this.reachedEnd = path.reachedEnd;
+        }
+    }
+
+    public void returnPaths(Pattern.Node root, Path rawPath) {
+        if (root instanceof Pattern.LastNode){
+            rawPath.reachedEnd = true;
+            return;
+        }else if (root == null || rawPath.currentSize > maxLength || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+            return;
+        }
+
+        // 需要特殊处理的节点（下一个节点不在next或者不止在next）
+        // 1. 循环
+        if (root instanceof Pattern.Prolog) {
+            returnPaths(((Pattern.Prolog)root).loop, rawPath);
+        } else if (root instanceof Pattern.Loop) {
+            // 获取Loop内的路径
+            Path loopPath = new Path(rawPath.currentSize);
+            returnPaths(((Pattern.Loop)root).body, loopPath);
+
+            // 构造本节点的nextPaths
+            Path tmpPath = copyPath(loopPath);
+            for(int i = 1; i < ((Pattern.Loop)root).cmin; i++){
+                addPathToEnds(tmpPath, loopPath);
+            }
+            for (int loopTimes = ((Pattern.Loop)root).cmin; loopTimes <= ((Pattern.Loop)root).cmax && loopTimes < maxLength; loopTimes++) {
+                // 将循环路径复制一份，并且添加到循环路径的后面
+                rawPath.nextPaths.add(tmpPath);
+                addPathToEnds(tmpPath, loopPath);
+            }
+
+            // 将所有叶子节点送入next
+            for(Path p : reachEnds(rawPath)){
+                returnPaths(root.next, p);
+            }
+
+            if (((Pattern.Loop)root).cmin == 0) {
+                Path nextPath = new Path(rawPath.currentSize);
+                rawPath.nextPaths.add(nextPath);
+                returnPaths(root.next, nextPath);
+            }
+        } else if (root instanceof Pattern.Curly) {
+            // 获取Curly内的路径
+            Path curlyPath = new Path(rawPath.currentSize);
+            returnPaths(((Pattern.Curly)root).atom, curlyPath);
+
+            // 构造本节点的nextPaths
+            Path tmpPath = copyPath(curlyPath);
+            for(int i = 1; i < ((Pattern.Curly)root).cmin; i++){
+                addPathToEnds(tmpPath, curlyPath);
+            }
+            for (int curlyTimes = ((Pattern.Curly)root).cmin; curlyTimes <= ((Pattern.Curly)root).cmax && curlyTimes < maxLength; curlyTimes++) {
+                // 将循环路径复制一份，并且添加到循环路径的后面
+                rawPath.nextPaths.add(tmpPath);
+                addPathToEnds(tmpPath, curlyPath);
+            }
+
+            // 将所有叶子节点送入next
+            for(Path p : reachEnds(rawPath)){
+                returnPaths(root.next, p);
+            }
+
+            if (((Pattern.Curly)root).cmin == 0) {
+                Path nextPath = new Path(rawPath.currentSize);
+                rawPath.nextPaths.add(nextPath);
+                returnPaths(root.next, nextPath);
+            }
+        } else if (root instanceof Pattern.GroupCurly) {
+            // 获取GroupCurly内的路径
+            Path groupCurlyPath = new Path(rawPath.currentSize);
+            returnPaths(((Pattern.GroupCurly)root).atom, groupCurlyPath);
+
+            // 构造本节点的nextPaths
+            Path tmpPath = copyPath(groupCurlyPath);
+            for(int i = 1; i < ((Pattern.GroupCurly)root).cmin; i++){
+                addPathToEnds(tmpPath, groupCurlyPath);
+            }
+            for (int groupCurlyTimes = ((Pattern.GroupCurly)root).cmin; groupCurlyTimes <= ((Pattern.GroupCurly)root).cmax && groupCurlyTimes < maxLength; groupCurlyTimes++) {
+                // 将循环路径复制一份，并且添加到循环路径的后面
+                rawPath.nextPaths.add(tmpPath);
+                addPathToEnds(tmpPath, groupCurlyPath);
+            }
+
+            // 将所有叶子节点送入next
+            for(Path p : reachEnds(rawPath)){
+                returnPaths(root.next, p);
+            }
+
+            if (((Pattern.GroupCurly)root).cmin == 0) {
+                Path nextPath = new Path(rawPath.currentSize);
+                rawPath.nextPaths.add(nextPath);
+                returnPaths(root.next, nextPath);
+            }
+        }
+
+        // 2. 分支
+        if (root instanceof Pattern.Branch) {
+            for(Pattern.Node node : ((Pattern.Branch)root).atoms){
+                if (node == null){
+                    continue;
+                }
+                Path branchPath = new Path(rawPath.currentSize);
+                rawPath.nextPaths.add(branchPath);
+                returnPaths(node, branchPath);
+            }
+        } else if (root instanceof Pattern.Ques) {
+            // 不进入Ques
+            Path branchPath = new Path(rawPath.currentSize);
+            rawPath.nextPaths.add(branchPath);
+            returnPaths(root.next, branchPath);
+
+            // 进入Ques
+            // 获取Ques内的路径
+            branchPath = new Path(rawPath.currentSize);
+            rawPath.nextPaths.add(branchPath);
+            returnPaths(((Pattern.Ques)root).atom, branchPath);
+            // 将所有叶子节点送入next
+            for(Path p : reachEnds(branchPath)){
+                returnPaths(root.next, p);
+            }
+        } else if(root instanceof Pattern.Conditional){
+            throw new RuntimeException("Pattern.Conditional not supported, please tell me which regex contains it.");
+        }
+
+        // 具有实际字符意义
+        else if (root instanceof Pattern.CharProperty){
+            if(((Pattern.CharProperty) root).charSet.size() == 0){
+                generateCharSet((Pattern.CharProperty) root);
+            }
+            rawPath.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
+            rawPath.currentSize++;
+            returnPaths(root.next, rawPath);
+        } else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
+            for (int i : ((Pattern.SliceNode) root).buffer){
+                Set<Integer> tmpCharSet = new HashSet<>();
+                tmpCharSet.add(i);
+                rawPath.path.add(tmpCharSet);
+                rawPath.currentSize++;
+            }
+            returnPaths(root.next, rawPath);
+        }
+
+        // 其他的都是直接走next
+        else{
+            returnPaths(root.next, rawPath);
+        }
+
+        return;
+    }
+
+    Path copyPath(Path path){
+        Path tmpPath = new Path(path);
+        for (Path p : path.nextPaths){
+            tmpPath.nextPaths.add(copyPath(p));
+        }
+        return tmpPath;
+    }
+
+    ArrayList<Path> reachEnds(Path path){
+        ArrayList<Path> result = new ArrayList<>();
+        for (Path p : path.nextPaths){
+            result.addAll(reachEnds(p));
+        }
+        return result;
+    }
+
+    void addPathToEnds(Path targetPath, Path sourcePath){
+        // 记得currentSize要每一位都加上
+        for (Path end : reachEnds(sourcePath)){
+            end.nextPaths.add(copyPath(targetPath));
+            calibrateCurrentSize(end);
+        }
+    }
+
+    void calibrateCurrentSize(Path path){
+        for (Path p : path.nextPaths){
+            p.currentSize = path.currentSize + p.path.size();
+            calibrateCurrentSize(p);
+        }
+    }
+
     public static class oldPath {
         public boolean reachEnd;
         public ArrayList<Set<Integer>> path;
