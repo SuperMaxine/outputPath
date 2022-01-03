@@ -32,9 +32,9 @@ public class Main {
         Pattern p = Pattern.compile(regex);
         Pattern.printObjectTree(p.root);
         // Analyzer a = new Analyzer(p);
-        ArrayList<Analyzer.Path> tmp = Analyzer.getPaths(p.root, 4);
-        ArrayList<Analyzer.Path> paths = new ArrayList<>();
-        for (Analyzer.Path path : tmp) {
+        ArrayList<Analyzer.oldPath> tmp = Analyzer.oldgetPaths(p.root, 4);
+        ArrayList<Analyzer.oldPath> paths = new ArrayList<>();
+        for (Analyzer.oldPath path : tmp) {
             if (path.reachEnd && path.path.size() > 0) {
                 paths.add(path);
             }
