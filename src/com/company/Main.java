@@ -12,9 +12,8 @@ import java.util.Iterator;
 public class Main {
 
     public static void main(String[] args) {
-        String regex = "a(ba*)+$";
+        String regex = "ab?c$";
         Pattern p = Pattern.compile(regex);
-        Analyzer a = new Analyzer(p, 2);
 
 
         // // String regex = "(?:xy*)\\Gtest\\b(?<!z)(a|b|c){1,3}z";
@@ -47,6 +46,7 @@ public class Main {
         // System.out.println(regex);
         // Analyzer.printPaths(paths);
         // System.out.println(p.matcher("123-456-7890").matches());
+        Analyzer a = new Analyzer(p, 4);
 
         System.out.println("[*] done");
         //

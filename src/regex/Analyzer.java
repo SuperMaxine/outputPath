@@ -17,6 +17,8 @@ public class Analyzer {
         this.maxLength = maxLength;
         root = new Path(0);
         returnPaths(pattern.root, root);
+        cutFailedBrach(root);
+        printPath.print(root);
     }
 
     class Path{
@@ -57,83 +59,80 @@ public class Analyzer {
             Path loopPath = new Path(rawPath.currentSize);
             returnPaths(((Pattern.Loop)root).body, loopPath);
 
-            // 构造本节点的nextPaths
-            Path tmpPath = copyPath(loopPath);
-            for(int i = 1; i < ((Pattern.Loop)root).cmin; i++){
-                addPathToEnds(tmpPath, loopPath);
-            }
+            // 获取Loop后的路径
+            Path nextPath = new Path(rawPath.currentSize);
+            returnPaths(root.next, nextPath);
+
+            ArrayList<Path> lastEnds = reachEnds(rawPath);
             for (int loopTimes = ((Pattern.Loop)root).cmin; loopTimes <= ((Pattern.Loop)root).cmax && loopTimes < maxLength; loopTimes++) {
-                // 将循环路径复制一份，并且添加到循环路径的后面
-                rawPath.nextPaths.add(tmpPath);
-                addPathToEnds(tmpPath, loopPath);
+                ArrayList<Path> newEnds = new ArrayList<>();
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(loopPath));
+                    calibrateCurrentSize(p);
+                    newEnds.addAll(reachEnds(p));
+                }
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(nextPath));
+                    calibrateCurrentSize(p);
+                }
+                lastEnds = newEnds;
             }
 
-            // 将所有叶子节点送入next
-            for(Path p : reachEnds(rawPath)){
-                returnPaths(root.next, p);
-            }
-
-            if (((Pattern.Loop)root).cmin == 0) {
-                Path nextPath = new Path(rawPath.currentSize);
-                rawPath.nextPaths.add(nextPath);
-                returnPaths(root.next, nextPath);
-            }
+            calibrateCurrentSize(rawPath);
         } else if (root instanceof Pattern.Curly) {
             // 获取Curly内的路径
             Path curlyPath = new Path(rawPath.currentSize);
             returnPaths(((Pattern.Curly)root).atom, curlyPath);
 
-            // 构造本节点的nextPaths
-            Path tmpPath = copyPath(curlyPath);
-            for(int i = 1; i < ((Pattern.Curly)root).cmin; i++){
-                addPathToEnds(tmpPath, curlyPath);
-            }
+            // 获取Curly后的路径
+            Path nextPath = new Path(rawPath.currentSize);
+            returnPaths(root.next, nextPath);
+
+            ArrayList<Path> lastEnds = reachEnds(rawPath);
             for (int curlyTimes = ((Pattern.Curly)root).cmin; curlyTimes <= ((Pattern.Curly)root).cmax && curlyTimes < maxLength; curlyTimes++) {
-                // 将循环路径复制一份，并且添加到循环路径的后面
-                rawPath.nextPaths.add(tmpPath);
-                addPathToEnds(tmpPath, curlyPath);
+                ArrayList<Path> newEnds = new ArrayList<>();
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(curlyPath));
+                    calibrateCurrentSize(p);
+                    newEnds.addAll(reachEnds(p));
+                }
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(nextPath));
+                    calibrateCurrentSize(p);
+                }
+                lastEnds = newEnds;
             }
 
-            // 将所有叶子节点送入next
-            for(Path p : reachEnds(rawPath)){
-                returnPaths(root.next, p);
-            }
-
-            if (((Pattern.Curly)root).cmin == 0) {
-                Path nextPath = new Path(rawPath.currentSize);
-                rawPath.nextPaths.add(nextPath);
-                returnPaths(root.next, nextPath);
-            }
+            calibrateCurrentSize(rawPath);
         } else if (root instanceof Pattern.GroupCurly) {
             // 获取GroupCurly内的路径
             Path groupCurlyPath = new Path(rawPath.currentSize);
             returnPaths(((Pattern.GroupCurly)root).atom, groupCurlyPath);
 
-            // 构造本节点的nextPaths
-            Path tmpPath = copyPath(groupCurlyPath);
-            for(int i = 1; i < ((Pattern.GroupCurly)root).cmin; i++){
-                addPathToEnds(tmpPath, groupCurlyPath);
-            }
+            // 获取GroupCurly后的路径
+            Path nextPath = new Path(rawPath.currentSize);
+            returnPaths(root.next, nextPath);
+
+            ArrayList<Path> lastEnds = reachEnds(rawPath);
             for (int groupCurlyTimes = ((Pattern.GroupCurly)root).cmin; groupCurlyTimes <= ((Pattern.GroupCurly)root).cmax && groupCurlyTimes < maxLength; groupCurlyTimes++) {
-                // 将循环路径复制一份，并且添加到循环路径的后面
-                rawPath.nextPaths.add(tmpPath);
-                addPathToEnds(tmpPath, groupCurlyPath);
+                ArrayList<Path> newEnds = new ArrayList<>();
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(groupCurlyPath));
+                    calibrateCurrentSize(p);
+                    newEnds.addAll(reachEnds(p));
+                }
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(nextPath));
+                    calibrateCurrentSize(p);
+                }
+                lastEnds = newEnds;
             }
 
-            // 将所有叶子节点送入next
-            for(Path p : reachEnds(rawPath)){
-                returnPaths(root.next, p);
-            }
-
-            if (((Pattern.GroupCurly)root).cmin == 0) {
-                Path nextPath = new Path(rawPath.currentSize);
-                rawPath.nextPaths.add(nextPath);
-                returnPaths(root.next, nextPath);
-            }
+            calibrateCurrentSize(rawPath);
         }
 
         // 2. 分支
-        if (root instanceof Pattern.Branch) {
+        else if (root instanceof Pattern.Branch) {
             for(Pattern.Node node : ((Pattern.Branch)root).atoms){
                 if (node == null){
                     continue;
@@ -143,20 +142,29 @@ public class Analyzer {
                 returnPaths(node, branchPath);
             }
         } else if (root instanceof Pattern.Ques) {
-            // 不进入Ques
-            Path branchPath = new Path(rawPath.currentSize);
-            rawPath.nextPaths.add(branchPath);
-            returnPaths(root.next, branchPath);
-
-            // 进入Ques
             // 获取Ques内的路径
-            branchPath = new Path(rawPath.currentSize);
-            rawPath.nextPaths.add(branchPath);
-            returnPaths(((Pattern.Ques)root).atom, branchPath);
-            // 将所有叶子节点送入next
-            for(Path p : reachEnds(branchPath)){
-                returnPaths(root.next, p);
+            Path quesPath = new Path(rawPath.currentSize);
+            returnPaths(((Pattern.Ques)root).atom, quesPath);
+
+            // 获取Ques后的路径
+            Path nextPath = new Path(rawPath.currentSize);
+            returnPaths(root.next, nextPath);
+
+            ArrayList<Path> lastEnds = reachEnds(rawPath);
+            ArrayList<Path> newEnds = new ArrayList<>();
+            for (Path p : lastEnds){
+                p.nextPaths.add(copyPath(quesPath));
+                calibrateCurrentSize(p);
+                newEnds.addAll(reachEnds(p));
+                p.nextPaths.add(copyPath(nextPath));
             }
+            for (Path p : newEnds){
+                p.nextPaths.add(copyPath(nextPath));
+                calibrateCurrentSize(p);
+            }
+
+            calibrateCurrentSize(rawPath);
+
         } else if(root instanceof Pattern.Conditional){
             throw new RuntimeException("Pattern.Conditional not supported, please tell me which regex contains it.");
         }
@@ -197,26 +205,131 @@ public class Analyzer {
 
     ArrayList<Path> reachEnds(Path path){
         ArrayList<Path> result = new ArrayList<>();
-        for (Path p : path.nextPaths){
-            result.addAll(reachEnds(p));
+        if (path.nextPaths.size() == 0) {
+            result.add(path);
+        } else {
+            for (Path p : path.nextPaths){
+                result.addAll(reachEnds(p));
+            }
         }
         return result;
     }
 
-    void addPathToEnds(Path targetPath, Path sourcePath){
-        // 记得currentSize要每一位都加上
-        for (Path end : reachEnds(sourcePath)){
-            end.nextPaths.add(copyPath(targetPath));
-            calibrateCurrentSize(end);
+    void calibrateCurrentSize(Path path){
+        Iterator iterator = path.nextPaths.iterator();
+        while (iterator.hasNext()) {
+            Object cur = iterator.next();
+            if (((Path) cur).currentSize > maxLength) {
+                iterator.remove();
+            } else{
+                ((Path) cur).currentSize = path.currentSize + ((Path) cur).path.size();
+                calibrateCurrentSize(((Path) cur));
+            }
         }
     }
 
-    void calibrateCurrentSize(Path path){
-        for (Path p : path.nextPaths){
-            p.currentSize = path.currentSize + p.path.size();
-            calibrateCurrentSize(p);
+    boolean cutFailedBrach(Path path){
+        ArrayList<Path> tmpPaths = new ArrayList<>();
+        Iterator iterator = path.nextPaths.iterator();
+        while (iterator.hasNext()) {
+            Object cur = iterator.next();
+            if (((Path) cur).path.size() == 0) {
+                tmpPaths.addAll(((Path) cur).nextPaths);
+                iterator.remove();
+            }
+        }
+        path.nextPaths.addAll(tmpPaths);
+
+        iterator = path.nextPaths.iterator();
+        while (iterator.hasNext()) {
+            Object cur = iterator.next();
+            if (!cutFailedBrach(((Path) cur))) {
+                iterator.remove();
+            } else {
+                path.reachedEnd = true;
+            }
+        }
+        return path.reachedEnd;
+    }
+
+    public static class printPath{
+        //获取特定类别的节点set
+        static Set<Integer> Dot = getNodeCharSet(DotP.root.next);
+        static Set<Integer> Bound = getNodeCharSet(BoundP.root.next);
+        static Set<Integer> Space = getNodeCharSet(SpaceP.root.next);
+        static Set<Integer> noneSpace = getNodeCharSet(noneSpaceP.root.next);
+        static Set<Integer> word = getNodeCharSet(wordP.root.next);
+
+        public static boolean equals(Set<?> set1, Set<?> set2){
+            //null就直接不比了
+            if(set1 == null || set2 ==null){
+                return false;
+            }
+            //大小不同也不用比了
+            if(set1.size()!=set2.size()){
+                return false;
+            }
+            //最后比containsAll
+            return set1.containsAll(set2);
+        }
+
+        private static String getContent(Path path){
+            StringBuilder sb = new StringBuilder();
+            int indexP = 0;
+            for (Set<Integer> set : path.path){
+                if (indexP != 0) {
+                    sb.append(",");
+                }
+                indexP++;
+
+                sb.append("[");
+
+                if (equals(set, Dot)){
+                    sb.append(".");
+                }
+                else if (equals(set, Bound)){
+                    sb.append("\\b");
+                }
+                else if (equals(set, Space)){
+                    sb.append("\\s");
+                }
+                else if (equals(set, noneSpace)){
+                    sb.append("\\S");
+                }
+                else if (equals(set, word)){
+                    sb.append("\\w");
+                }
+                else{
+                    int indexS = 0;
+                    for (int i : set){
+                        if(indexS != 0){
+                            sb.append(",");
+                        }
+                        indexS++;
+                        sb.append((char) i);
+                    }
+                }
+                sb.append("]");
+            }
+            return sb.toString();
+        }
+
+        public static void print(Path path){
+            String pathName = path.toString().replace("regex.Analyzer$Path@", "");
+            System.out.println(pathName + "[\"" + getContent(path) + "\"]");
+            for (Path p : path.nextPaths){
+                System.out.println(pathName + "-->" + p.toString().replace("regex.Analyzer$Path@", ""));
+            }
+            System.out.println();
+            for (Path p : path.nextPaths){
+                print(p);
+            }
         }
     }
+
+
+
+
 
     public static class oldPath {
         public boolean reachEnd;
@@ -626,7 +739,8 @@ public class Analyzer {
     private static final Pattern noneSpaceP = Pattern.compile("\\S");
     private static final Pattern wordP = Pattern.compile("\\w");
 
-    public static void printPaths(ArrayList<oldPath> paths){
+
+    public static void oldPrintPaths(ArrayList<oldPath> paths){
         /**
          * 对照表
          * \b : [8]
