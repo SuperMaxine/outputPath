@@ -18,6 +18,7 @@ public class Analyzer {
         root = new Path(0);
         returnPaths(pattern.root, root);
         cutFailedBrach(root);
+        System.out.println("flowchart LR");
         printPath.print(root);
     }
 
@@ -77,6 +78,10 @@ public class Analyzer {
                 }
                 lastEnds = newEnds;
             }
+            for (Path p : lastEnds){
+                p.nextPaths.add(copyPath(nextPath));
+                calibrateCurrentSize(p);
+            }
 
             calibrateCurrentSize(rawPath);
         } else if (root instanceof Pattern.Curly) {
@@ -102,6 +107,10 @@ public class Analyzer {
                 }
                 lastEnds = newEnds;
             }
+            for (Path p : lastEnds){
+                p.nextPaths.add(copyPath(nextPath));
+                calibrateCurrentSize(p);
+            }
 
             calibrateCurrentSize(rawPath);
         } else if (root instanceof Pattern.GroupCurly) {
@@ -126,6 +135,10 @@ public class Analyzer {
                     calibrateCurrentSize(p);
                 }
                 lastEnds = newEnds;
+            }
+            for (Path p : lastEnds){
+                p.nextPaths.add(copyPath(nextPath));
+                calibrateCurrentSize(p);
             }
 
             calibrateCurrentSize(rawPath);
@@ -233,22 +246,17 @@ public class Analyzer {
         Iterator iterator = path.nextPaths.iterator();
         while (iterator.hasNext()) {
             Object cur = iterator.next();
-            if (((Path) cur).path.size() == 0) {
-                tmpPaths.addAll(((Path) cur).nextPaths);
-                iterator.remove();
-            }
-        }
-        path.nextPaths.addAll(tmpPaths);
-
-        iterator = path.nextPaths.iterator();
-        while (iterator.hasNext()) {
-            Object cur = iterator.next();
             if (!cutFailedBrach(((Path) cur))) {
                 iterator.remove();
             } else {
                 path.reachedEnd = true;
+                if (((Path) cur).path.size() == 0) {
+                    tmpPaths.addAll(((Path) cur).nextPaths);
+                    iterator.remove();
+                }
             }
         }
+        path.nextPaths.addAll(tmpPaths);
         return path.reachedEnd;
     }
 
@@ -276,6 +284,9 @@ public class Analyzer {
         private static String getContent(Path path){
             StringBuilder sb = new StringBuilder();
             int indexP = 0;
+            if (path.path.size() == 0){
+                return "None";
+            }
             for (Set<Integer> set : path.path){
                 if (indexP != 0) {
                     sb.append(",");
