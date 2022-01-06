@@ -65,6 +65,15 @@ public class Analyzer {
             returnPaths(root.next, nextPath);
 
             ArrayList<Path> lastEnds = reachEnds(rawPath);
+            for (int i = 0; i < ((Pattern.Loop)root).cmin; i++) {
+                ArrayList<Path> newEnds = new ArrayList<>();
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(loopPath));
+                    calibrateCurrentSize(p);
+                    newEnds.addAll(reachEnds(p));
+                }
+                lastEnds = newEnds;
+            }
             for (int loopTimes = ((Pattern.Loop)root).cmin; loopTimes <= ((Pattern.Loop)root).cmax && loopTimes < maxLength; loopTimes++) {
                 ArrayList<Path> newEnds = new ArrayList<>();
                 for (Path p : lastEnds){
@@ -94,6 +103,15 @@ public class Analyzer {
             returnPaths(root.next, nextPath);
 
             ArrayList<Path> lastEnds = reachEnds(rawPath);
+            for (int i = 0; i < ((Pattern.Curly)root).cmin; i++) {
+                ArrayList<Path> newEnds = new ArrayList<>();
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(curlyPath));
+                    calibrateCurrentSize(p);
+                    newEnds.addAll(reachEnds(p));
+                }
+                lastEnds = newEnds;
+            }
             for (int curlyTimes = ((Pattern.Curly)root).cmin; curlyTimes <= ((Pattern.Curly)root).cmax && curlyTimes < maxLength; curlyTimes++) {
                 ArrayList<Path> newEnds = new ArrayList<>();
                 for (Path p : lastEnds){
@@ -123,6 +141,15 @@ public class Analyzer {
             returnPaths(root.next, nextPath);
 
             ArrayList<Path> lastEnds = reachEnds(rawPath);
+            for (int i = 0; i < ((Pattern.GroupCurly)root).cmin; i++) {
+                ArrayList<Path> newEnds = new ArrayList<>();
+                for (Path p : lastEnds){
+                    p.nextPaths.add(copyPath(groupCurlyPath));
+                    calibrateCurrentSize(p);
+                    newEnds.addAll(reachEnds(p));
+                }
+                lastEnds = newEnds;
+            }
             for (int groupCurlyTimes = ((Pattern.GroupCurly)root).cmin; groupCurlyTimes <= ((Pattern.GroupCurly)root).cmax && groupCurlyTimes < maxLength; groupCurlyTimes++) {
                 ArrayList<Path> newEnds = new ArrayList<>();
                 for (Path p : lastEnds){
