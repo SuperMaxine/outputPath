@@ -1,8 +1,5 @@
 package regex;
 
-import javafx.util.Pair;
-
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -14,7 +11,8 @@ public class Analyzer {
     Path root;
     Map<Path, Path> countingBiggerThan2; // 中缀的结束节点作为Key，开始节点作为Value
     Map<Path, ArrayList<Set<Integer>>> PrePaths; // Path是中缀的开始节点
-    Map<Path, ArrayList<Set<Integer>>> PumpPaths; // Path是中缀的结束节点
+    public Map<Path, ArrayList<Set<Integer>>> PumpPaths; // Path是中缀的结束节点
+    public Map<Pattern.Node, ArrayList<Set<Integer>>> PumpPaths2; // PumpPaths的字符串形式
 
     public Analyzer(Pattern pattern, int maxLength) {
         this.pattern = pattern;
@@ -30,6 +28,9 @@ public class Analyzer {
 
         System.out.println("flowchart LR");
         printPath.print(root);
+
+        System.out.println("\n\n\n");
+        printPath.printPump(PumpPaths);
     }
 
     class Path{
@@ -37,12 +38,14 @@ public class Analyzer {
         int currentSize;
         ArrayList<Path> nextPaths;
         boolean reachedEnd;
+        boolean LastNode;
 
         Path(int size){
             path = new ArrayList<>();
             currentSize = size;
             nextPaths = new ArrayList<>();
             reachedEnd = false;
+            LastNode = false;
         }
 
         Path(Path path){
@@ -50,12 +53,17 @@ public class Analyzer {
             this.currentSize = path.currentSize;
             this.nextPaths = new ArrayList<>();
             this.reachedEnd = path.reachedEnd;
+            this.LastNode = path.LastNode;
         }
     }
 
     public void returnPaths(Pattern.Node root, Path rawPath) {
         if (root instanceof Pattern.LastNode){
             rawPath.reachedEnd = true;
+            Path LastNode = new Path(0);
+            LastNode.LastNode = true;
+            LastNode.reachedEnd = true;
+            rawPath.nextPaths.add(LastNode);
             return;
         }else if (root == null || rawPath.currentSize > maxLength || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             return;
@@ -92,9 +100,7 @@ public class Analyzer {
                     newEnds.addAll(reachEnds(p));
                 }
                 for (Path p : lastEnds){
-                    if (p.currentSize - rawPath.currentSize > 1) {
-                        countingBiggerThan2.put(p, rawPath);
-                    }
+                    countingBiggerThan2.put(p, rawPath);
                     p.nextPaths.add(copyPath(nextPath));
                     calibrateCurrentSize(p);
                 }
@@ -133,9 +139,7 @@ public class Analyzer {
                     newEnds.addAll(reachEnds(p));
                 }
                 for (Path p : lastEnds){
-                    if (p.currentSize - rawPath.currentSize > 1) {
-                        countingBiggerThan2.put(p, rawPath);
-                    }
+                    countingBiggerThan2.put(p, rawPath);
                     p.nextPaths.add(copyPath(nextPath));
                     calibrateCurrentSize(p);
                 }
@@ -174,9 +178,7 @@ public class Analyzer {
                     newEnds.addAll(reachEnds(p));
                 }
                 for (Path p : lastEnds){
-                    if (p.currentSize - rawPath.currentSize > 1) {
-                        countingBiggerThan2.put(p, rawPath);
-                    }
+                    countingBiggerThan2.put(p, rawPath);
                     p.nextPaths.add(copyPath(nextPath));
                     calibrateCurrentSize(p);
                 }
@@ -254,7 +256,8 @@ public class Analyzer {
         return;
     }
 
-    void generateAttackArgs(Path root, ArrayList<Set<Integer>> pre){
+    void generateAttackArgs(Path root, ArrayList<Set<Integer>> rawPre){
+        ArrayList<Set<Integer>> pre = new ArrayList<>(rawPre);
         pre.addAll(root.path);
 
         if (countingBiggerThan2.containsValue(root)){
@@ -364,12 +367,59 @@ public class Analyzer {
         }
 
         private static String getContent(Path path){
+            if (path.LastNode) {
+                return "LastNode";
+            }
             StringBuilder sb = new StringBuilder();
             int indexP = 0;
             if (path.path.size() == 0){
                 return "None";
             }
             for (Set<Integer> set : path.path){
+                if (indexP != 0) {
+                    sb.append(",");
+                }
+                indexP++;
+
+                sb.append("[");
+
+                if (equals(set, Dot)){
+                    sb.append(".");
+                }
+                else if (equals(set, Bound)){
+                    sb.append("\\b");
+                }
+                else if (equals(set, Space)){
+                    sb.append("\\s");
+                }
+                else if (equals(set, noneSpace)){
+                    sb.append("\\S");
+                }
+                else if (equals(set, word)){
+                    sb.append("\\w");
+                }
+                else{
+                    int indexS = 0;
+                    for (int i : set){
+                        if(indexS != 0){
+                            sb.append(",");
+                        }
+                        indexS++;
+                        sb.append((char) i);
+                    }
+                }
+                sb.append("]");
+            }
+            return sb.toString();
+        }
+
+        private static String getContent(ArrayList<Set<Integer>> list){
+            StringBuilder sb = new StringBuilder();
+            int indexP = 0;
+            if (list.size() == 0){
+                return "None";
+            }
+            for (Set<Integer> set : list){
                 if (indexP != 0) {
                     sb.append(",");
                 }
@@ -418,6 +468,26 @@ public class Analyzer {
                 print(p);
             }
         }
+
+        public static void printPump(Map<Path, ArrayList<Set<Integer>>> pump){
+            ArrayList<String> list = new ArrayList<>();
+            for (Map.Entry<Path, ArrayList<Set<Integer>>> entry : pump.entrySet()) {
+                list.add(getContent(entry.getValue()).toString());
+            }
+
+            // sort list by length
+            Collections.sort(list, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o2.length() - o1.length();
+                }
+            });
+
+            for (String s : list){
+                System.out.println(s);
+                System.out.println("-------------------------------");
+            }
+        }
     }
 
     private static void generateCharSet(Pattern.CharProperty root){
@@ -446,5 +516,5 @@ public class Analyzer {
             return null;
         }
     }
-    
+
 }
