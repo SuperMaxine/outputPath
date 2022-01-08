@@ -13,4 +13,13 @@
 - [x] 分支结构的Path
 - [x] 新结构的打印输出
 
-更新的详细记录：
+之后要记录更新的详细记录：
+
+## 2022年1月8日
+- [x] 获取**每一个长度大于二的counting**的前缀和中缀
+  - 在Analyzer类中新建成员变量
+    - Map<Path, Path> countingBiggerThan2，以中缀的结束节点作为Key，开始节点作为Value
+    - Map<Path, ArrayList<Set<Integer>>> PrePaths，以中缀的开始节点作为Key
+    - Map<Path, ArrayList<Set<Integer>>> PumpPaths，以中缀的结束节点作为Key
+  - 在Analyzer类中新建函数
+    - generateAttackArgs()，递归遍历Path树，生成PrePath和PumpPath放入PrePaths和PumpPaths中

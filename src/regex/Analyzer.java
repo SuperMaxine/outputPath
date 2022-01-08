@@ -12,12 +12,22 @@ public class Analyzer {
     int maxLength;
     Pattern pattern;
     Path root;
+    Map<Path, Path> countingBiggerThan2; // 中缀的结束节点作为Key，开始节点作为Value
+    Map<Path, ArrayList<Set<Integer>>> PrePaths; // Path是中缀的开始节点
+    Map<Path, ArrayList<Set<Integer>>> PumpPaths; // Path是中缀的结束节点
+
     public Analyzer(Pattern pattern, int maxLength) {
         this.pattern = pattern;
         this.maxLength = maxLength;
         root = new Path(0);
+        countingBiggerThan2 = new HashMap<>();
+        PrePaths = new HashMap<>();
+        PumpPaths = new HashMap<>();
         returnPaths(pattern.root, root);
         cutFailedBrach(root);
+
+        generateAttackArgs(this.root, new ArrayList<>());
+
         System.out.println("flowchart LR");
         printPath.print(root);
     }
@@ -82,6 +92,9 @@ public class Analyzer {
                     newEnds.addAll(reachEnds(p));
                 }
                 for (Path p : lastEnds){
+                    if (p.currentSize - rawPath.currentSize > 1) {
+                        countingBiggerThan2.put(p, rawPath);
+                    }
                     p.nextPaths.add(copyPath(nextPath));
                     calibrateCurrentSize(p);
                 }
@@ -120,6 +133,9 @@ public class Analyzer {
                     newEnds.addAll(reachEnds(p));
                 }
                 for (Path p : lastEnds){
+                    if (p.currentSize - rawPath.currentSize > 1) {
+                        countingBiggerThan2.put(p, rawPath);
+                    }
                     p.nextPaths.add(copyPath(nextPath));
                     calibrateCurrentSize(p);
                 }
@@ -158,6 +174,9 @@ public class Analyzer {
                     newEnds.addAll(reachEnds(p));
                 }
                 for (Path p : lastEnds){
+                    if (p.currentSize - rawPath.currentSize > 1) {
+                        countingBiggerThan2.put(p, rawPath);
+                    }
                     p.nextPaths.add(copyPath(nextPath));
                     calibrateCurrentSize(p);
                 }
@@ -235,6 +254,35 @@ public class Analyzer {
         return;
     }
 
+    void generateAttackArgs(Path root, ArrayList<Set<Integer>> pre){
+        pre.addAll(root.path);
+
+        if (countingBiggerThan2.containsValue(root)){
+            PrePaths.put(root, new ArrayList<>(pre));
+        }
+
+        if (countingBiggerThan2.containsKey(root)) {
+            ArrayList<Set<Integer>> pump = new ArrayList<>(pre);
+            Iterator iteratorPump = pump.iterator();
+            Iterator iteratorPre = (PrePaths.get(countingBiggerThan2.get(root))).iterator();
+            while (iteratorPump.hasNext() && iteratorPre.hasNext()) {
+                Object curPump = iteratorPump.next();
+                Object curPre = iteratorPre.next();
+                if (curPump.equals(curPre)) {
+                    // 注意！！！这里时Iterator.remove()!!!而不是list.remove()!!!
+                    iteratorPump.remove();
+                } else {
+                    break;
+                }
+            }
+            PumpPaths.put(root, pump);
+        }
+
+        for (Path p : root.nextPaths){
+            generateAttackArgs(p, pre);
+        }
+    }
+
     Path copyPath(Path path){
         Path tmpPath = new Path(path);
         for (Path p : path.nextPaths){
@@ -274,13 +322,14 @@ public class Analyzer {
         while (iterator.hasNext()) {
             Object cur = iterator.next();
             if (!cutFailedBrach(((Path) cur))) {
+                countingBiggerThan2.remove(cur);
                 iterator.remove();
             } else {
                 path.reachedEnd = true;
-                if (((Path) cur).path.size() == 0) {
-                    tmpPaths.addAll(((Path) cur).nextPaths);
-                    iterator.remove();
-                }
+                // if (((Path) cur).path.size() == 0) {
+                //     tmpPaths.addAll(((Path) cur).nextPaths);
+                //     iterator.remove();
+                // }
             }
         }
         path.nextPaths.addAll(tmpPaths);
