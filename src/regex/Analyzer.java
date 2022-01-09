@@ -85,6 +85,7 @@ public class Analyzer<comparePathLength> {
                     ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
                     pumpCheck.add(pumpPath);
                     printPaths(pumpCheck);
+                    System.out.println("new PrePath");
                     ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
                     preCheck.add(prePath);
                     printPaths(preCheck);
@@ -249,8 +250,8 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.Loop) root).body, new oldPath(), limit, endNode, type));
 
-            ArrayList<oldPath> lastPaths = new ArrayList<>();
-            lastPaths.add(path);
+            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            // lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Loop) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -318,8 +319,8 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.Curly) root).atom, new oldPath(), limit, endNode, type));
 
-            ArrayList<oldPath> lastPaths = new ArrayList<>();
-            lastPaths.add(path);
+            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            // lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Curly) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -387,8 +388,8 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.GroupCurly) root).atom, new oldPath(), limit, endNode, type));
 
-            ArrayList<oldPath> lastPaths = new ArrayList<>();
-            lastPaths.add(path);
+            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            // lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.GroupCurly) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
