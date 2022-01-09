@@ -14,37 +14,70 @@ public class Analyzer<comparePathLength> {
 
     Pattern pattern;
     int maxLength;
+    static Set<Integer> fullCharSet;
     private ArrayList<Pattern.Node> OneLoopNodes;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPumpPaths;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
     private Map<Pattern.Node, String> OneLoopPreString;
 
+    enum returnPathsType{
+        pump,
+        pre
+    }
+
+    boolean getPathOverlap(oldPath path1, oldPath path2, oldPath result){
+        // 如果两个路径的长度不同，则不可能有重叠
+        if (path1.path.size() != path2.path.size()) {
+            return false;
+        }
+        else {
+            // 如果两个路径的长度相同，则需要比较每一个节点的字符集
+            ArrayList<Set<Integer>> charSet1 = new ArrayList<>();
+            for (int i = 0 ; i < path1.path.size(); i++){
+                Set<Integer> tmpCharSet = new HashSet<>();
+                tmpCharSet.addAll(path1.path.get(i));
+                tmpCharSet.retainAll(path2.path.get(i));
+                if (tmpCharSet.size() == 0){
+                    return false;
+                }
+                else {
+                    charSet1.add(tmpCharSet);
+                }
+            }
+            result.path = charSet1;
+            return true;
+        }
+    }
+
     public Analyzer(Pattern pattern, int maxLength){
         OneLoopNodes = new ArrayList<>();
         this.pattern = pattern;
         this.maxLength = maxLength;
+        this.fullCharSet = new HashSet<>();
         OneLoopPumpPaths = new HashMap<>();
         OneLoopPrePaths = new HashMap<>();
         OneLoopPreString = new HashMap<>();
 
-        searchOneLoopNode(pattern.root);
+        searchOneLoopNode(pattern.root, true);
 
         System.out.println("OneLoopNodes: " + OneLoopNodes.size());
 
         for (Pattern.Node node : OneLoopNodes) {
-            OneLoopPumpPaths.put(node, retrunPaths(node, new oldPath(), maxLength, node.next));
-            OneLoopPrePaths.put(node, retrunPaths(pattern.root, new oldPath(), maxLength, node));
-            // int count = 0;
-            // for (oldPath path : OneLoopPumpPaths.get(node)) {
-            //     if (path.reachEnd) {
-            //         count++;
-            //     }
-            // }
+            OneLoopPumpPaths.put(node, retrunPaths(node, new oldPath(), maxLength, node.next, returnPathsType.pump));
+            // OneLoopPrePaths.put(node, retrunPaths(pattern.root, new oldPath(), maxLength, node, returnPathsType.pre));
+            OneLoopPrePaths.put(node, new ArrayList<>());
+            retrunPaths(pattern.root, new oldPath(), maxLength, node, returnPathsType.pre);
+
             // printPaths(OneLoopPumpPaths.get(node));
-            // System.out.println(count);
+
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
             for (oldPath prePath : OneLoopPrePaths.get(node)) {
                 for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+                // for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
+                //     oldPath pumpPath = new oldPath();
+                //     for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+                //         getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+                //     }
                     Enumerator preEnum = new Enumerator(prePath);
                     Enumerator pumpEnum = new Enumerator(pumpPath);
 
@@ -57,9 +90,9 @@ public class Analyzer<comparePathLength> {
                     printPaths(preCheck);
 
                     System.out.println("brfore while");
-                    while (pumpEnum.hasNext()) {
-                        // System.out.println("while1");
-                        if (preEnum.Empty()) {
+
+                    if (preEnum.Empty()) {
+                        while (pumpEnum.hasNext()) {
                             String pump = pumpEnum.next();
                             System.out.println(pump);
                             // if (pump.equals("aaa"))
@@ -68,16 +101,18 @@ public class Analyzer<comparePathLength> {
                             System.out.println(matchingStepCnt);
                             // if (pump.equals("abca"))
                             //     System.out.println("abca");
-                            if (matchingStepCnt > 1e5){
+                            if (matchingStepCnt > 1e5) {
                                 System.out.println("matchingStepCnt > 1e5");
-                                return ;
+                                return;
                             }
                             // System.out.println("");
                         }
-                        else {
-                            while (preEnum.hasNext()) {
+                    }
+                    else {
+                        while (preEnum.hasNext()) {
+                            String pre = preEnum.next();
+                            while (pumpEnum.hasNext()) {
                                 // System.out.println("brfore next");
-                                String pre = preEnum.next();
                                 String pump = pumpEnum.next();
                                 // System.out.println(pre + pump);
                                 double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
@@ -90,46 +125,7 @@ public class Analyzer<comparePathLength> {
                         }
                     }
 
-                    // // if (prePath.path.size() > 0) {
-                    //         while (preEnum.hasNext()) {
-                    //             // if (pumpPath.path.size() > 0) {
-                    //                 while (pumpEnum.hasNext()) {
-                    //                     String pre = preEnum.next();
-                    //                     String pump = pumpEnum.next();
-                    //                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 10000, 10000000);
-                    //                     String attack = pre + pump;
-                    //                     // for (char c : attack.toCharArray()) {
-                    //                     //     System.out.print(c);
-                    //                     // }
-                    //                     System.out.println(attack);
-                    //                     System.out.println("");
-                    //                     // System.out.println(matchingStepCnt);
-                    //                     // if (attack.equals("ab")) {
-                    //                     //     System.out.println(pump);
-                    //                     // }
-                    //                 // }
-                    //             }
-                    //     }
-                    // }
-                    // else {
-                    //     if (pumpPath.path.size() > 0) {
-                    //         while (pumpEnum.hasNext()) {
-                    //             String pre = preEnum.next();
-                    //             String pump = pumpEnum.next();
-                    //             // double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 9, 10000000);
-                    //             // System.out.println(pre + pump);
-                    //             // System.out.println(matchingStepCnt);
-                    //             String attack = pre + pump;
-                    //             // for (char c : attack.toCharArray()) {
-                    //             //     System.out.print(c);
-                    //             // }
-                    //             // System.out.println();
-                    //             if (attack.equals("ab")) {
-                    //                 System.out.println(pump);
-                    //             }
-                    //         }
-                    //     }
-                    // }
+
                     System.out.println("-----------------");
                 }
             }
@@ -140,26 +136,32 @@ public class Analyzer<comparePathLength> {
         System.out.println("[*] Analyzer done");
     }
 
-    public void searchOneLoopNode(Pattern.Node root){
+    public void searchOneLoopNode(Pattern.Node root, boolean record){
         if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             return;
         }
 
         // 需要特殊处理的节点（下一个节点不在next或者不止在next）
         if (root instanceof Pattern.Prolog) {
-            searchOneLoopNode(((Pattern.Prolog)root).loop);
+            searchOneLoopNode(((Pattern.Prolog)root).loop, record);
         } else if (root instanceof Pattern.Loop) {
-            OneLoopNodes.add(root);
-            searchOneLoopNode(((Pattern.Loop)root).body);
-            searchOneLoopNode(((Pattern.Loop)root).next);
+            if (record) {
+                OneLoopNodes.add(root);
+            }
+            searchOneLoopNode(((Pattern.Loop)root).body, record);
+            searchOneLoopNode(((Pattern.Loop)root).next, record);
         } else if (root instanceof Pattern.Curly) {
-            OneLoopNodes.add(root);
-            searchOneLoopNode(((Pattern.Curly)root).atom);
-            searchOneLoopNode(((Pattern.Curly)root).next);
+            if (record) {
+                OneLoopNodes.add(root);
+            }
+            searchOneLoopNode(((Pattern.Curly)root).atom, record);
+            searchOneLoopNode(((Pattern.Curly)root).next, record);
         } else if (root instanceof Pattern.GroupCurly) {
-            OneLoopNodes.add(root);
-            searchOneLoopNode(((Pattern.GroupCurly)root).atom);
-            searchOneLoopNode(((Pattern.GroupCurly)root).next);
+            if (record) {
+                OneLoopNodes.add(root);
+            }
+            searchOneLoopNode(((Pattern.GroupCurly)root).atom, record);
+            searchOneLoopNode(((Pattern.GroupCurly)root).next, record);
         }
 
         // 2. 分支
@@ -168,167 +170,303 @@ public class Analyzer<comparePathLength> {
                 if (node == null){
                     continue;
                 }
-                searchOneLoopNode(node);
+                searchOneLoopNode(node, record);
             }
         } else if(root instanceof Pattern.Ques){
-            searchOneLoopNode(((Pattern.Ques)root).atom);
-            searchOneLoopNode(((Pattern.Ques)root).next);
+            searchOneLoopNode(((Pattern.Ques)root).atom, record);
+            searchOneLoopNode(((Pattern.Ques)root).next, record);
+        }
+
+        // 具有实际字符意义
+        else if (root instanceof Pattern.CharProperty){
+            if(((Pattern.CharProperty) root).charSet.size() == 0){
+                // generateCharSet((Pattern.CharProperty) root);
+                generateFullCharSet((Pattern.CharProperty) root);
+            }
+            // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
+            // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+            searchOneLoopNode(root.next, record);
+        }
+
+        else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
+            for (int i : ((Pattern.SliceNode) root).buffer){
+                // Set<Integer> tmpCharSet = new HashSet<>();
+                fullCharSet.add(i);
+                // path.path.add(tmpCharSet);
+            }
+            // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+            searchOneLoopNode(root.next, record);
+        }
+
+        // lookaround处理
+        else if (root instanceof Pattern.Pos){
+            searchOneLoopNode(((Pattern.Pos)root).cond, false);
+            searchOneLoopNode(((Pattern.Pos)root).next, record);
+        }else if (root instanceof Pattern.Neg){
+            searchOneLoopNode(((Pattern.Neg)root).cond, false);
+            searchOneLoopNode(((Pattern.Neg)root).next, record);
+        }else if (root instanceof Pattern.Behind){
+            searchOneLoopNode(((Pattern.Behind)root).cond, false);
+            searchOneLoopNode(((Pattern.Behind)root).next, record);
+        }else if (root instanceof Pattern.NotBehind){
+            searchOneLoopNode(((Pattern.NotBehind)root).cond, false);
+            searchOneLoopNode(((Pattern.NotBehind)root).next, record);
         }
 
         else {
-            searchOneLoopNode(root.next);
+            searchOneLoopNode(root.next, record);
         }
 
     }
 
-    public static ArrayList<oldPath> retrunPaths(Pattern.Node root, oldPath rawPath, int maxLength, Pattern.Node endNode){
+    public ArrayList<oldPath> retrunPaths(Pattern.Node root, oldPath rawPath, int maxLength, Pattern.Node endNode, returnPathsType type){
         oldPath path = new oldPath(rawPath);
         ArrayList<oldPath> result = new ArrayList<>();
-        if (root == null || path.path.size() > maxLength || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+        if (root == null || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             result.add(path);
             return result;
         }else if (root == endNode){
             path.reachEnd = true;
             result.add(path);
+            if (type == returnPathsType.pre){
+                OneLoopPrePaths.get(endNode).add(path);
+            }
             return result;
-        } else if (root instanceof Pattern.LastNode){
+        } else if (root instanceof Pattern.LastNode || path.path.size() > maxLength){
             return result;
         }
 
         // 需要特殊处理的节点（下一个节点不在next或者不止在next）
         // 1. 循环
         if (root instanceof Pattern.Prolog) {
-            result.addAll(retrunPaths(((Pattern.Prolog)root).loop, path, maxLength, endNode));
+            result.addAll(retrunPaths(((Pattern.Prolog)root).loop, path, maxLength, endNode, type));
         } else if (root instanceof Pattern.Loop) {
-            // 前提是GroupTail到Loop的通路被打断
+            int limit = maxLength - path.path.size();
 
-            // 在前往next节点前，本节点的所有结果放在tmpPath1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
+            ArrayList<oldPath> nextPaths = new ArrayList<>();
+            nextPaths.addAll(retrunPaths(root.next, new oldPath(), limit, endNode, type));
 
-            // 重复循环，每次把上一轮循环结果存入tmpPath1后再送入下一轮循环
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
-            ArrayList<oldPath> lastCyclePath = new ArrayList<>();
-            lastCyclePath.add(path);
-            for(int i = 0; i < ((Pattern.Loop) root).cmax && i < maxLength - path.path.size(); i++){
-                path.cycleTimes.put(root.toString(), i + 1);
-                for(oldPath p : lastCyclePath){
-                    thisCyclePath.addAll(retrunPaths(((Pattern.Loop) root).body, p, maxLength, endNode));
+            thisCyclePath.addAll(retrunPaths(((Pattern.Loop) root).body, new oldPath(), limit, endNode, type));
+
+            ArrayList<oldPath> lastPaths = new ArrayList<>();
+            lastPaths.add(path);
+            for (int loopTime = 0; loopTime < ((Pattern.Loop) root).cmin; loopTime++) {
+                ArrayList<oldPath> thisPaths = new ArrayList<>();
+                Iterator iterator = lastPaths.iterator();
+                while (iterator.hasNext()) {
+                    Object cur = iterator.next();
+                    if (((oldPath)cur).path.size() > limit) {
+                        iterator.remove();
+                    }
+                    for (oldPath p2 : thisCyclePath) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(((oldPath)cur).path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            thisPaths.add(p);
+                        }
+                    }
                 }
-                tmpPath1.addAll(thisCyclePath);
-                lastCyclePath = thisCyclePath;
-                thisCyclePath = new ArrayList<>();
+                lastPaths = thisPaths;
             }
 
-            // 如果可以不进入循环节点，则将path也加入tmpPath1
-            if (((Pattern.Loop) root).cmin == 0) {
-                tmpPath1.add(path);
-            }
-
-            // 最后将所有结果送入next
-            for(oldPath p : tmpPath1){
-                // 为每一条path添加dividePoint
-                if(p.path.size() != path.path.size()) {
-                    p.dividePoints.add(new oldPath.dividePoint(root.toString(), path.path.size(), p.path.size()));
+            for (int loopTime = ((Pattern.Loop)root).cmin; loopTime < ((Pattern.Loop)root).cmax && loopTime < limit; loopTime++) {
+                ArrayList<oldPath> thisPaths = new ArrayList<>();
+                Iterator iterator = lastPaths.iterator();
+                while (iterator.hasNext()) {
+                    Object cur = iterator.next();
+                    if (((oldPath)cur).path.size() > limit) {
+                        iterator.remove();
+                    }
+                    for (oldPath p2 : thisCyclePath) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(((oldPath)cur).path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            thisPaths.add(p);
+                        }
+                    }
                 }
-
-                result.addAll(retrunPaths(root.next, p, maxLength, endNode));
+                for (oldPath p1 : lastPaths) {
+                    for (oldPath p2 : nextPaths) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(p1.path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            result.add(p);
+                        }
+                    }
+                }
+                lastPaths = thisPaths;
             }
+            for (oldPath p1 : lastPaths) {
+                for (oldPath p2 : nextPaths) {
+                    oldPath p = new oldPath();
+                    p.path.addAll(p1.path);
+                    p.path.addAll(p2.path);
+                    result.add(p);
+                }
+            }
+
         } else if (root instanceof Pattern.Curly) {
-            // 在前往next节点前，本节点的所有结果放在tmpPath1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
+            int limit = maxLength - path.path.size();
 
-            // 重复循环，每次把上一轮循环结果存入tmpPath1后再送入下一轮循环
+            ArrayList<oldPath> nextPaths = new ArrayList<>();
+            nextPaths.addAll(retrunPaths(root.next, new oldPath(), limit, endNode, type));
+
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
-            ArrayList<oldPath> lastCyclePath = new ArrayList<>();
-            lastCyclePath.add(path);
-            for(int i = 0; i < ((Pattern.Curly) root).cmax && i < maxLength - path.path.size(); i++){
-                path.cycleTimes.put(root.toString(), i + 1);
-                for(oldPath p : lastCyclePath){
-                    thisCyclePath.addAll(retrunPaths(((Pattern.Curly) root).atom, p, maxLength, endNode));
+            thisCyclePath.addAll(retrunPaths(((Pattern.Curly) root).atom, new oldPath(), limit, endNode, type));
+
+            ArrayList<oldPath> lastPaths = new ArrayList<>();
+            lastPaths.add(path);
+            for (int loopTime = 0; loopTime < ((Pattern.Curly) root).cmin; loopTime++) {
+                ArrayList<oldPath> thisPaths = new ArrayList<>();
+                Iterator iterator = lastPaths.iterator();
+                while (iterator.hasNext()) {
+                    Object cur = iterator.next();
+                    if (((oldPath)cur).path.size() > limit) {
+                        iterator.remove();
+                    }
+                    for (oldPath p2 : thisCyclePath) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(((oldPath)cur).path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            thisPaths.add(p);
+                        }
+                    }
                 }
-                tmpPath1.addAll(thisCyclePath);
-                lastCyclePath = thisCyclePath;
-                thisCyclePath = new ArrayList<>();
+                lastPaths = thisPaths;
             }
 
-            // 如果可以不进入循环节点，则将path也加入tmpPath1
-            if (((Pattern.Curly) root).cmin == 0) {
-                tmpPath1.add(path);
-            }
-
-            // 最后将所有结果送入next
-            for(oldPath p : tmpPath1){
-                // 为每一条path添加dividePoint
-                if(p.path.size() != path.path.size()) {
-                    p.dividePoints.add(new oldPath.dividePoint(root.toString(), path.path.size(), p.path.size()));
+            for (int loopTime = ((Pattern.Curly)root).cmin; loopTime < ((Pattern.Curly)root).cmax && loopTime < limit; loopTime++) {
+                ArrayList<oldPath> thisPaths = new ArrayList<>();
+                Iterator iterator = lastPaths.iterator();
+                while (iterator.hasNext()) {
+                    Object cur = iterator.next();
+                    if (((oldPath)cur).path.size() > limit) {
+                        iterator.remove();
+                    }
+                    for (oldPath p2 : thisCyclePath) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(((oldPath)cur).path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            thisPaths.add(p);
+                        }
+                    }
                 }
-
-                result.addAll(retrunPaths(root.next, p, maxLength, endNode));
+                for (oldPath p1 : lastPaths) {
+                    for (oldPath p2 : nextPaths) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(p1.path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            result.add(p);
+                        }
+                    }
+                }
+                lastPaths = thisPaths;
             }
+            for (oldPath p1 : lastPaths) {
+                for (oldPath p2 : nextPaths) {
+                    oldPath p = new oldPath();
+                    p.path.addAll(p1.path);
+                    p.path.addAll(p2.path);
+                    result.add(p);
+                }
+            }
+
         } else if (root instanceof Pattern.GroupCurly) {
-            // 在前往next节点前，本节点的所有结果放在tmpPath1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
+            int limit = maxLength - path.path.size();
 
-            // 重复循环，每次把上一轮循环结果存入tmpPath1后再送入下一轮循环
+            ArrayList<oldPath> nextPaths = new ArrayList<>();
+            nextPaths.addAll(retrunPaths(root.next, new oldPath(), limit, endNode, type));
+
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
-            ArrayList<oldPath> lastCyclePath = new ArrayList<>();
-            lastCyclePath.add(path);
-            for(int i = 0; i < ((Pattern.GroupCurly) root).cmax && i < maxLength - path.path.size(); i++){
-                path.cycleTimes.put(root.toString(), i + 1);
-                for(oldPath p : lastCyclePath){
-                    thisCyclePath.addAll(retrunPaths(((Pattern.GroupCurly) root).atom, p, maxLength, endNode));
+            thisCyclePath.addAll(retrunPaths(((Pattern.GroupCurly) root).atom, new oldPath(), limit, endNode, type));
+
+            ArrayList<oldPath> lastPaths = new ArrayList<>();
+            lastPaths.add(path);
+            for (int loopTime = 0; loopTime < ((Pattern.GroupCurly) root).cmin; loopTime++) {
+                ArrayList<oldPath> thisPaths = new ArrayList<>();
+                Iterator iterator = lastPaths.iterator();
+                while (iterator.hasNext()) {
+                    Object cur = iterator.next();
+                    if (((oldPath)cur).path.size() > limit) {
+                        iterator.remove();
+                    }
+                    for (oldPath p2 : thisCyclePath) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(((oldPath)cur).path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            thisPaths.add(p);
+                        }
+                    }
                 }
-                tmpPath1.addAll(thisCyclePath);
-                lastCyclePath = thisCyclePath;
-                thisCyclePath = new ArrayList<>();
+                lastPaths = thisPaths;
             }
 
-            // 如果可以不进入循环节点，则将path也加入tmpPath1
-            if (((Pattern.GroupCurly) root).cmin == 0) {
-                tmpPath1.add(path);
-            }
-
-            // 最后将所有结果送入next
-            for(oldPath p : tmpPath1){
-                // 为每一条path添加dividePoint
-                if(p.path.size() != path.path.size()) {
-                    p.dividePoints.add(new oldPath.dividePoint(root.toString(), path.path.size(), p.path.size()));
+            for (int loopTime = ((Pattern.GroupCurly)root).cmin; loopTime < ((Pattern.GroupCurly)root).cmax && loopTime < limit; loopTime++) {
+                ArrayList<oldPath> thisPaths = new ArrayList<>();
+                Iterator iterator = lastPaths.iterator();
+                while (iterator.hasNext()) {
+                    Object cur = iterator.next();
+                    if (((oldPath)cur).path.size() > limit) {
+                        iterator.remove();
+                    }
+                    for (oldPath p2 : thisCyclePath) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(((oldPath)cur).path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            thisPaths.add(p);
+                        }
+                    }
                 }
-
-                result.addAll(retrunPaths(root.next, p, maxLength, endNode));
+                for (oldPath p1 : lastPaths) {
+                    for (oldPath p2 : nextPaths) {
+                        oldPath p = new oldPath();
+                        p.path.addAll(p1.path);
+                        p.path.addAll(p2.path);
+                        if (p.path.size() < limit) {
+                            result.add(p);
+                        }
+                    }
+                }
+                lastPaths = thisPaths;
+            }
+            for (oldPath p1 : lastPaths) {
+                for (oldPath p2 : nextPaths) {
+                    oldPath p = new oldPath();
+                    p.path.addAll(p1.path);
+                    p.path.addAll(p2.path);
+                    result.add(p);
+                }
             }
         }
 
         // 2. 分支
         else if(root instanceof Pattern.Branch){
-            // 记录unmatchedBranchConn
-            path.unmeetBranchConn.put(((Pattern.Branch) root).conn.toString(), new Pair<>(root.toString(), path.path.size()));
-
             for(Pattern.Node node : ((Pattern.Branch)root).atoms){
                 if (node == null){
                     continue;
                 }
-                result.addAll(retrunPaths(node, path, maxLength, endNode));
+                result.addAll(retrunPaths(node, path, maxLength, endNode, type));
             }
         } else if (root instanceof Pattern.BranchConn) {
-            // 完成dividePoint
-            Pair<String, Integer> unmeetBranchConn = path.unmeetBranchConn.get(root.toString());
-            if(unmeetBranchConn.getValue() != path.path.size()) {
-                path.dividePoints.add(new oldPath.dividePoint(unmeetBranchConn.getKey(), unmeetBranchConn.getValue(), path.path.size()));
-            }
-            // 删除unmatchedBranchConn
-            path.unmeetBranchConn.remove(root.toString());
-
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
+            result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
         } else if(root instanceof Pattern.Ques){
             // TODO: 几种type并未区分
             // 1. 0或1
             ArrayList<oldPath> tmpPath1 = new ArrayList<>();
             tmpPath1.add(path);
-            tmpPath1.addAll(retrunPaths(((Pattern.Ques) root).atom, path, maxLength, endNode));
+            tmpPath1.addAll(retrunPaths(((Pattern.Ques) root).atom, path, maxLength, endNode, type));
 
             for(oldPath p : tmpPath1){
-                result.addAll(retrunPaths(root.next, p, maxLength, endNode));
+                result.addAll(retrunPaths(root.next, p, maxLength, endNode, type));
             }
         } else if(root instanceof Pattern.Conditional){
             throw new RuntimeException("Pattern.Conditional not supported, please tell me which regex contains it.");
@@ -340,7 +478,7 @@ public class Analyzer<comparePathLength> {
                 generateCharSet((Pattern.CharProperty) root);
             }
             path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
+            result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
         }
 
         else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
@@ -349,374 +487,10 @@ public class Analyzer<comparePathLength> {
                 tmpCharSet.add(i);
                 path.path.add(tmpCharSet);
             }
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
+            result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
         }
 
         // lookaround处理
-        else if (root instanceof Pattern.Pos){
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.Pos) root).cond, maxLength));
-            // 把tmpPath按照path的长度进行排序
-            Collections.sort(tmpPath1, comparePathLength);
-
-            // 合并进posPath内
-            ArrayList<Set<Integer>> posPath = new ArrayList<>(tmpPath1.get(0).path);
-            for(oldPath p : tmpPath1){
-                for(int i = 0; i < p.path.size(); i++){
-                    posPath.get(i).addAll(p.path.get(i));
-                }
-            }
-
-            // 如果posPath的长度小于path的长度，则把posPath的长度设置为path的长度
-            if(path.posPath.size() < path.path.size() + posPath.size()){
-                for(int i = path.posPath.size(); i < path.path.size(); i++){
-                    path.posPath.add(new HashSet<>());
-                }
-            }
-
-            // 将posPath添加到path.posPath中
-            path.posPath.addAll(posPath);
-
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
-        }else if (root instanceof Pattern.Neg){
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.Neg) root).cond, maxLength));
-            // 把tmpPath按照path的长度进行排序
-            Collections.sort(tmpPath1, comparePathLength);
-
-            // 合并进negPath内
-            ArrayList<Set<Integer>> negPath = new ArrayList<>(tmpPath1.get(0).path);
-            for(oldPath p : tmpPath1){
-                for(int i = 0; i < p.path.size(); i++){
-                    negPath.get(i).addAll(p.path.get(i));
-                }
-            }
-
-            // 如果negPath的长度小于path的长度，则把negPath的长度设置为path的长度
-            if(path.negPath.size() < path.path.size() + negPath.size()){
-                for(int i = path.negPath.size(); i < path.path.size(); i++){
-                    path.negPath.add(new HashSet<>());
-                }
-            }
-
-            // 将negPath添加到path.negPath中
-            path.negPath.addAll(negPath);
-
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
-        }else if (root instanceof Pattern.Behind){
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.Behind) root).cond, maxLength));
-            // 把tmpPath按照path的长度进行排序
-            Collections.sort(tmpPath1, comparePathLength);
-
-            // 合并进behindPath内
-            ArrayList<Set<Integer>> behindPath = new ArrayList<>(tmpPath1.get(0).path);
-            for(oldPath p : tmpPath1){
-                for(int i = 0; i < p.path.size(); i++){
-                    behindPath.get(i).addAll(p.path.get(i));
-                }
-            }
-
-            // 如果posPath的长度小于path的长度，则把posPath的长度设置为path的长度
-            if(path.posPath.size() < path.path.size() + behindPath.size()){
-                for(int i = path.posPath.size(); i < path.path.size(); i++){
-                    path.posPath.add(new HashSet<>());
-                }
-            }
-
-            // 将behindPath添加到path.posPath中
-            System.out.println("path.path.size():"+path.path.size());
-            System.out.println("behindPath.size():"+behindPath.size());
-            for(int i = (path.path.size() >= behindPath.size())?path.path.size() - behindPath.size():0, j = 0; i < path.path.size(); i++, j++){
-                path.posPath.get(i).addAll(behindPath.get(j));
-            }
-
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
-        }else if (root instanceof Pattern.NotBehind){
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.NotBehind) root).cond, maxLength));
-            // 把tmpPath按照path的长度进行排序
-            Collections.sort(tmpPath1, comparePathLength);
-
-            // 合并进notBehindPath内
-            ArrayList<Set<Integer>> notBehindPath = new ArrayList<>(tmpPath1.get(0).path);
-            for(oldPath p : tmpPath1){
-                for(int i = 0; i < p.path.size(); i++){
-                    notBehindPath.get(i).addAll(p.path.get(i));
-                }
-            }
-
-            // 如果negPath的长度小于path的长度，则把negPath的长度设置为path的长度
-            if(path.negPath.size() < path.path.size() + notBehindPath.size()){
-                for(int i = path.negPath.size(); i < path.path.size(); i++){
-                    path.negPath.add(new HashSet<>());
-                }
-            }
-
-            // 将notBehindPath添加到path.negPath中
-            for(int i = (path.path.size() >= notBehindPath.size())?path.path.size() - notBehindPath.size():0, j = 0;i < path.path.size(); i++, j++){
-                path.negPath.get(i).addAll(notBehindPath.get(j));
-            }
-
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
-        }
-
-        // 其他的都是直接走next
-        else{
-            result.addAll(retrunPaths(root.next, path, maxLength, endNode));
-        }
-
-
-        return result;
-    }
-
-    public static class oldPath {
-        public boolean reachEnd;
-        public ArrayList<Set<Integer>> path;
-        public ArrayList<Set<Integer>> negPath; // negPath长于path是可以的,实际上最末尾的negPath并没有生效，直接扣会导致扣多，但结果至少是正确的
-        public ArrayList<Set<Integer>> posPath; // posPath必须短于或等于path，因为如果长于path则不满足最末尾的posPath，导致不能被匹配
-        public ArrayList<dividePoint> dividePoints;
-        Map<String, Pair<String, Integer>> unmeetBranchConn;
-        Map<String, Integer> cycleTimes;
-
-        public oldPath() {
-            this.reachEnd = false;
-            this.path = new ArrayList<>();
-            this.cycleTimes = new HashMap<>();
-            this.negPath = new ArrayList<>();
-            this.posPath = new ArrayList<>();
-            this.dividePoints = new ArrayList<>();
-            this.unmeetBranchConn = new HashMap<>();
-        }
-        public oldPath(oldPath p) {
-            this.reachEnd = p.reachEnd;
-            this.path = new ArrayList<>(p.path);
-            this.cycleTimes = new HashMap<>(p.cycleTimes);
-            this.negPath = new ArrayList<>(p.negPath);
-            this.posPath = new ArrayList<>(p.posPath);
-            this.dividePoints = new ArrayList<>(p.dividePoints);
-            this.unmeetBranchConn = new HashMap<>(p.unmeetBranchConn);
-        }
-
-        private static class dividePoint {
-            public String node;
-            public int begin;
-            public int end;
-
-            public dividePoint(String node, int begin, int end) {
-                this.node = node;
-                this.begin = begin;
-                this.end = end;
-            }
-        }
-    }
-
-    public static ArrayList<oldPath> oldgetPaths(Pattern.Node root, int maxLength){
-        ArrayList<oldPath> paths = oldreturnPaths(root, new oldPath(), maxLength);
-        for(oldPath p : paths){
-            for(int i = 0; i < p.negPath.size() && i < p.path.size(); i++){
-                Set<Integer> tmp = new HashSet<>(p.path.get(i));
-                tmp.removeAll(p.negPath.get(i));
-                p.path.set(i, tmp);
-                if(p.path.get(i).size()==0){
-                    p.reachEnd = false;
-                }
-            }
-            for(int i = 0; i < p.posPath.size() && i < p.path.size(); i++){
-                if(p.posPath.get(i).size() != 0){
-                    Set<Integer> tmp = new HashSet<>(p.path.get(i));
-                    tmp.retainAll(p.posPath.get(i));
-                    p.path.set(i, tmp);
-                }
-                if(p.path.get(i).size()==0){
-                    p.reachEnd = false;
-                }
-            }
-        }
-        return paths;
-    }
-
-    public static ArrayList<oldPath> getPaths(Pattern.Node root, int maxLength){
-        ArrayList<oldPath> paths = oldreturnPaths(root, new oldPath(), maxLength);
-        return paths;
-    }
-
-    private static void generateCharSet(Pattern.CharProperty root){
-        for(int i = 0; i < 65536; i++){
-            if(root.isSatisfiedBy(i)){
-                root.charSet.add(i);
-            }
-        }
-    }
-
-    public static ArrayList<oldPath> oldreturnPaths(Pattern.Node root, oldPath rawPath, int maxLength){
-        oldPath path = new oldPath(rawPath);
-        ArrayList<oldPath> result = new ArrayList<>();
-        if (root == null || path.path.size() > maxLength || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
-            result.add(path);
-            return result;
-        }else if (root instanceof Pattern.LastNode){
-            path.reachEnd = true;
-            result.add(path);
-            return result;
-        }
-
-        // 需要特殊处理的节点（下一个节点不在next或者不止在next）
-        // 1. 循环
-        if (root instanceof Pattern.Prolog) {
-            result.addAll(oldreturnPaths(((Pattern.Prolog)root).loop, path, maxLength));
-        } else if (root instanceof Pattern.Loop) {
-            // 前提是GroupTail到Loop的通路被打断
-
-            // 在前往next节点前，本节点的所有结果放在tmpPath1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
-
-            // 重复循环，每次把上一轮循环结果存入tmpPath1后再送入下一轮循环
-            ArrayList<oldPath> thisCyclePath = new ArrayList<>();
-            ArrayList<oldPath> lastCyclePath = new ArrayList<>();
-            lastCyclePath.add(path);
-            for(int i = 0; i < ((Pattern.Loop) root).cmax && i < maxLength - path.path.size(); i++){
-                path.cycleTimes.put(root.toString(), i + 1);
-                for(oldPath p : lastCyclePath){
-                    thisCyclePath.addAll(oldreturnPaths(((Pattern.Loop) root).body, p, maxLength));
-                }
-                tmpPath1.addAll(thisCyclePath);
-                lastCyclePath = thisCyclePath;
-                thisCyclePath = new ArrayList<>();
-            }
-
-            // 如果可以不进入循环节点，则将path也加入tmpPath1
-            if (((Pattern.Loop) root).cmin == 0) {
-                tmpPath1.add(path);
-            }
-
-            // 最后将所有结果送入next
-            for(oldPath p : tmpPath1){
-                // 为每一条path添加dividePoint
-                if(p.path.size() != path.path.size()) {
-                    p.dividePoints.add(new oldPath.dividePoint(root.toString(), path.path.size(), p.path.size()));
-                }
-
-                result.addAll(oldreturnPaths(root.next, p, maxLength));
-            }
-        } else if (root instanceof Pattern.Curly) {
-            // 在前往next节点前，本节点的所有结果放在tmpPath1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
-
-            // 重复循环，每次把上一轮循环结果存入tmpPath1后再送入下一轮循环
-            ArrayList<oldPath> thisCyclePath = new ArrayList<>();
-            ArrayList<oldPath> lastCyclePath = new ArrayList<>();
-            lastCyclePath.add(path);
-            for(int i = 0; i < ((Pattern.Curly) root).cmax && i < maxLength - path.path.size(); i++){
-                path.cycleTimes.put(root.toString(), i + 1);
-                for(oldPath p : lastCyclePath){
-                    thisCyclePath.addAll(oldreturnPaths(((Pattern.Curly) root).atom, p, maxLength));
-                }
-                tmpPath1.addAll(thisCyclePath);
-                lastCyclePath = thisCyclePath;
-                thisCyclePath = new ArrayList<>();
-            }
-
-            // 如果可以不进入循环节点，则将path也加入tmpPath1
-            if (((Pattern.Curly) root).cmin == 0) {
-                tmpPath1.add(path);
-            }
-
-            // 最后将所有结果送入next
-            for(oldPath p : tmpPath1){
-                // 为每一条path添加dividePoint
-                if(p.path.size() != path.path.size()) {
-                    p.dividePoints.add(new oldPath.dividePoint(root.toString(), path.path.size(), p.path.size()));
-                }
-
-                result.addAll(oldreturnPaths(root.next, p, maxLength));
-            }
-        } else if (root instanceof Pattern.GroupCurly) {
-            // 在前往next节点前，本节点的所有结果放在tmpPath1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
-
-            // 重复循环，每次把上一轮循环结果存入tmpPath1后再送入下一轮循环
-            ArrayList<oldPath> thisCyclePath = new ArrayList<>();
-            ArrayList<oldPath> lastCyclePath = new ArrayList<>();
-            lastCyclePath.add(path);
-            for(int i = 0; i < ((Pattern.GroupCurly) root).cmax && i < maxLength - path.path.size(); i++){
-                path.cycleTimes.put(root.toString(), i + 1);
-                for(oldPath p : lastCyclePath){
-                    thisCyclePath.addAll(oldreturnPaths(((Pattern.GroupCurly) root).atom, p, maxLength));
-                }
-                tmpPath1.addAll(thisCyclePath);
-                lastCyclePath = thisCyclePath;
-                thisCyclePath = new ArrayList<>();
-            }
-
-            // 如果可以不进入循环节点，则将path也加入tmpPath1
-            if (((Pattern.GroupCurly) root).cmin == 0) {
-                tmpPath1.add(path);
-            }
-
-            // 最后将所有结果送入next
-            for(oldPath p : tmpPath1){
-                // 为每一条path添加dividePoint
-                if(p.path.size() != path.path.size()) {
-                    p.dividePoints.add(new oldPath.dividePoint(root.toString(), path.path.size(), p.path.size()));
-                }
-
-                result.addAll(oldreturnPaths(root.next, p, maxLength));
-            }
-        }
-
-        // 2. 分支
-        else if(root instanceof Pattern.Branch){
-            // 记录unmatchedBranchConn
-            path.unmeetBranchConn.put(((Pattern.Branch) root).conn.toString(), new Pair<>(root.toString(), path.path.size()));
-
-            for(Pattern.Node node : ((Pattern.Branch)root).atoms){
-                if (node == null){
-                    continue;
-                }
-                result.addAll(oldreturnPaths(node, path, maxLength));
-            }
-
-
-        } else if (root instanceof Pattern.BranchConn) {
-            // 完成dividePoint
-            Pair<String, Integer> unmeetBranchConn = path.unmeetBranchConn.get(root.toString());
-            if(unmeetBranchConn.getValue() != path.path.size()) {
-                path.dividePoints.add(new oldPath.dividePoint(unmeetBranchConn.getKey(), unmeetBranchConn.getValue(), path.path.size()));
-            }
-            // 删除unmatchedBranchConn
-            path.unmeetBranchConn.remove(root.toString());
-
-            result.addAll(oldreturnPaths(root.next, path, maxLength));
-        } else if(root instanceof Pattern.Ques){
-            // TODO: 几种type并未区分
-            // 1. 0或1
-            ArrayList<oldPath> tmpPath1 = new ArrayList<>();
-            tmpPath1.add(path);
-            tmpPath1.addAll(oldreturnPaths(((Pattern.Ques) root).atom, path, maxLength));
-
-            for(oldPath p : tmpPath1){
-                result.addAll(oldreturnPaths(root.next, p, maxLength));
-            }
-        } else if(root instanceof Pattern.Conditional){
-            throw new RuntimeException("Pattern.Conditional not supported, please tell me which regex contains it.");
-        }
-
-        // 具有实际字符意义
-        else if (root instanceof Pattern.CharProperty){
-            if(((Pattern.CharProperty) root).charSet.size() == 0){
-                generateCharSet((Pattern.CharProperty) root);
-            }
-            path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
-            result.addAll(oldreturnPaths(root.next, path, maxLength));
-        }
-
-        else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
-            for (int i : ((Pattern.SliceNode) root).buffer){
-                Set<Integer> tmpCharSet = new HashSet<>();
-                tmpCharSet.add(i);
-                path.path.add(tmpCharSet);
-            }
-            result.addAll(oldreturnPaths(root.next, path, maxLength));
-        }
-
-        // // lookaround处理
         // else if (root instanceof Pattern.Pos){
         //     ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.Pos) root).cond, maxLength));
         //     // 把tmpPath按照path的长度进行排序
@@ -740,7 +514,7 @@ public class Analyzer<comparePathLength> {
         //     // 将posPath添加到path.posPath中
         //     path.posPath.addAll(posPath);
         //
-        //     result.addAll(oldreturnPaths(root.next, path, maxLength));
+        //     result.addAll(retrunPaths(root.next, path, maxLength, endNode));
         // }else if (root instanceof Pattern.Neg){
         //     ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.Neg) root).cond, maxLength));
         //     // 把tmpPath按照path的长度进行排序
@@ -764,7 +538,7 @@ public class Analyzer<comparePathLength> {
         //     // 将negPath添加到path.negPath中
         //     path.negPath.addAll(negPath);
         //
-        //     result.addAll(oldreturnPaths(root.next, path, maxLength));
+        //     result.addAll(retrunPaths(root.next, path, maxLength, endNode));
         // }else if (root instanceof Pattern.Behind){
         //     ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.Behind) root).cond, maxLength));
         //     // 把tmpPath按照path的长度进行排序
@@ -792,7 +566,7 @@ public class Analyzer<comparePathLength> {
         //         path.posPath.get(i).addAll(behindPath.get(j));
         //     }
         //
-        //     result.addAll(oldreturnPaths(root.next, path, maxLength));
+        //     result.addAll(retrunPaths(root.next, path, maxLength, endNode));
         // }else if (root instanceof Pattern.NotBehind){
         //     ArrayList<oldPath> tmpPath1 = new ArrayList<>(oldgetPaths(((Pattern.NotBehind) root).cond, maxLength));
         //     // 把tmpPath按照path的长度进行排序
@@ -818,16 +592,75 @@ public class Analyzer<comparePathLength> {
         //         path.negPath.get(i).addAll(notBehindPath.get(j));
         //     }
         //
-        //     result.addAll(oldreturnPaths(root.next, path, maxLength));
+        //     result.addAll(retrunPaths(root.next, path, maxLength, endNode));
         // }
 
         // 其他的都是直接走next
         else{
-            result.addAll(oldreturnPaths(root.next, path, maxLength));
+            result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
         }
 
 
         return result;
+    }
+
+    public static class oldPath {
+        public boolean reachEnd;
+        public ArrayList<Set<Integer>> path;
+        public ArrayList<Set<Integer>> negPath; // negPath长于path是可以的,实际上最末尾的negPath并没有生效，直接扣会导致扣多，但结果至少是正确的
+        public ArrayList<Set<Integer>> posPath; // posPath必须短于或等于path，因为如果长于path则不满足最末尾的posPath，导致不能被匹配
+
+        public oldPath() {
+            this.reachEnd = false;
+            this.path = new ArrayList<>();
+            this.negPath = new ArrayList<>();
+            this.posPath = new ArrayList<>();
+        }
+        public oldPath(oldPath p) {
+            this.reachEnd = p.reachEnd;
+            this.path = new ArrayList<>(p.path);
+            this.negPath = new ArrayList<>(p.negPath);
+            this.posPath = new ArrayList<>(p.posPath);
+        }
+
+    }
+
+
+
+
+
+    private static void generateCharSet(Pattern.CharProperty root){
+        // for(int i = 0; i < 65536; i++){
+        //     if(root.isSatisfiedBy(i)){
+        //         root.charSet.add(i);
+        //     }
+        // }
+        for (Integer c : fullCharSet) {
+            if (root.isSatisfiedBy(c)) {
+                root.charSet.add(c);
+            }
+        }
+    }
+
+
+    private void generateFullCharSet(Pattern.CharProperty root){
+        Set<Integer> charSet = new HashSet<>();
+        for(int i = 0; i < 65536; i++){
+            charSet.add(i);
+        }
+        if (charSet.size() > 60000) {
+            int count = 0;
+            for (Integer c : charSet) {
+                if (count >= 100) {
+                    return;
+                } else {
+                    count++;
+                    fullCharSet.add(c);
+                }
+            }
+        } else {
+            fullCharSet.addAll(charSet);
+        }
     }
 
     public static Comparator<oldPath> comparePathLength = new Comparator<oldPath>() {
