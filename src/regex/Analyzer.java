@@ -19,6 +19,7 @@ public class Analyzer<comparePathLength> {
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPumpPaths;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
     private Map<Pattern.Node, String> OneLoopPreString;
+    private Map<Pattern.Node, Set<Integer>> bigCharSet;
 
     enum returnPathsType{
         pump,
@@ -57,6 +58,7 @@ public class Analyzer<comparePathLength> {
         OneLoopPumpPaths = new HashMap<>();
         OneLoopPrePaths = new HashMap<>();
         OneLoopPreString = new HashMap<>();
+        bigCharSet = new HashMap<>();
 
         searchOneLoopNode(pattern.root, true);
 
@@ -631,16 +633,19 @@ public class Analyzer<comparePathLength> {
 
 
     private static void generateCharSet(Pattern.CharProperty root){
-        // for(int i = 0; i < 65536; i++){
-        //     if(root.isSatisfiedBy(i)){
-        //         root.charSet.add(i);
-        //     }
-        // }
-        for (Integer c : fullCharSet) {
-            if (root.isSatisfiedBy(c)) {
-                root.charSet.add(c);
+        Set<Integer> charSet = new HashSet<>();
+        for(int i = 0; i < 65536; i++){
+            if(root.isSatisfiedBy(i)){
+                charSet.add(i);
             }
         }
+        
+
+        // for (Integer c : fullCharSet) {
+        //     if (root.isSatisfiedBy(c)) {
+        //         root.charSet.add(c);
+        //     }
+        // }
     }
 
 
@@ -649,18 +654,23 @@ public class Analyzer<comparePathLength> {
         for(int i = 0; i < 65536; i++){
             charSet.add(i);
         }
-        if (charSet.size() > 60000) {
-            int count = 0;
-            for (Integer c : charSet) {
-                if (count >= 100) {
-                    return;
-                } else {
-                    count++;
-                    fullCharSet.add(c);
-                }
-            }
-        } else {
+        // if (charSet.size() > 60000) {
+        //     int count = 0;
+        //     for (Integer c : charSet) {
+        //         if (count >= 100) {
+        //             return;
+        //         } else {
+        //             count++;
+        //             fullCharSet.add(c);
+        //         }
+        //     }
+        // } else {
+        //     fullCharSet.addAll(charSet);
+        // }
+        if (charSet.size() < 30){
             fullCharSet.addAll(charSet);
+        } else {
+            bigCharSet.put(root, charSet);
         }
     }
 
