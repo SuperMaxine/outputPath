@@ -73,75 +73,75 @@ public class Analyzer<comparePathLength> {
                 }
             });
 
-            // System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
-            // printPaths(OneLoopPumpPaths.get(node));
-            // System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
-            // printPaths(OneLoopPrePaths.get(node));
+            System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
+            printPaths(OneLoopPumpPaths.get(node));
+            System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
+            printPaths(OneLoopPrePaths.get(node));
 
-            redosPattern testPattern = redosPattern.compile(pattern.pattern());
-            for (oldPath prePath : OneLoopPrePaths.get(node)) {
-                // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-                for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
-                    oldPath pumpPath = new oldPath();
-                    for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
-                        getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
-                    }
-                    Enumerator preEnum = new Enumerator(prePath);
-                    Enumerator pumpEnum = new Enumerator(pumpPath);
-
-                    // ArrayList<oldPath> forPrint = new ArrayList<>();
-                    // forPrint.add(pumpPath);
-                    // printPaths(forPrint);
-                    //
-                    // System.out.println("new PumpPath");
-                    // ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
-                    // pumpCheck.add(pumpPath);
-                    // printPaths(pumpCheck);
-                    // System.out.println("new PrePath");
-                    // ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
-                    // preCheck.add(prePath);
-                    // printPaths(preCheck);
-
-                    System.out.println("brfore while");
-
-                    if (preEnum.Empty()) {
-                        while (pumpEnum.hasNext()) {
-                            String pump = pumpEnum.next();
-                            System.out.println(pump);
-                            // if (pump.equals("aaa"))
-                            //     System.out.println("aaa");
-                            double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
-                            System.out.println(matchingStepCnt);
-                            // if (pump.equals("abca"))
-                            //     System.out.println("abca");
-                            if (matchingStepCnt > 1e5) {
-                                System.out.println("matchingStepCnt > 1e5");
-                                return;
-                            }
-                            // System.out.println("");
-                        }
-                    }
-                    else {
-                        while (preEnum.hasNext()) {
-                            String pre = preEnum.next();
-                            while (pumpEnum.hasNext()) {
-                                // System.out.println("brfore next");
-                                String pump = pumpEnum.next();
-                                // System.out.println(pre + pump);
-                                double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
-                                System.out.println(matchingStepCnt);
-                                if (matchingStepCnt > 1e5){
-                                    System.out.println("matchingStepCnt > 1e5");
-                                    return ;
-                                }
-                            }
-                        }
-                    }
-
-
-                    System.out.println("-----------------");
-                }
-            }
+            // redosPattern testPattern = redosPattern.compile(pattern.pattern());
+            // for (oldPath prePath : OneLoopPrePaths.get(node)) {
+            //     // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+            //     for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
+            //         oldPath pumpPath = new oldPath();
+            //         for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+            //             getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+            //         }
+            //         Enumerator preEnum = new Enumerator(prePath);
+            //         Enumerator pumpEnum = new Enumerator(pumpPath);
+            //
+            //         ArrayList<oldPath> forPrint = new ArrayList<>();
+            //         forPrint.add(pumpPath);
+            //         printPaths(forPrint);
+            //
+            //         System.out.println("new PumpPath");
+            //         ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
+            //         pumpCheck.add(pumpPath);
+            //         printPaths(pumpCheck);
+            //         System.out.println("new PrePath");
+            //         ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
+            //         preCheck.add(prePath);
+            //         printPaths(preCheck);
+            //
+            //         System.out.println("brfore while");
+            //
+            //         if (preEnum.Empty()) {
+            //             while (pumpEnum.hasNext()) {
+            //                 String pump = pumpEnum.next();
+            //                 System.out.println(pump);
+            //                 // if (pump.equals("aaa"))
+            //                 //     System.out.println("aaa");
+            //                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
+            //                 System.out.println(matchingStepCnt);
+            //                 // if (pump.equals("abca"))
+            //                 //     System.out.println("abca");
+            //                 if (matchingStepCnt > 1e5) {
+            //                     System.out.println("matchingStepCnt > 1e5");
+            //                     return;
+            //                 }
+            //                 // System.out.println("");
+            //             }
+            //         }
+            //         else {
+            //             while (preEnum.hasNext()) {
+            //                 String pre = preEnum.next();
+            //                 while (pumpEnum.hasNext()) {
+            //                     // System.out.println("brfore next");
+            //                     String pump = pumpEnum.next();
+            //                     // System.out.println(pre + pump);
+            //                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
+            //                     System.out.println(matchingStepCnt);
+            //                     if (matchingStepCnt > 1e5){
+            //                         System.out.println("matchingStepCnt > 1e5");
+            //                         return ;
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //
+            //
+            //         System.out.println("-----------------");
+            //     }
+            // }
         }
 
 
@@ -270,9 +270,9 @@ public class Analyzer<comparePathLength> {
             // printPaths(thisCyclePath);
             // System.out.println("-----------------------");
 
-            // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
-            ArrayList<oldPath> lastPaths = new ArrayList<>();
-            lastPaths.add(path);
+            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            // ArrayList<oldPath> lastPaths = new ArrayList<>();
+            // lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Loop) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -341,9 +341,9 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.Curly) root).atom, new oldPath(), limit, endNode, type));
 
-            // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
-            ArrayList<oldPath> lastPaths = new ArrayList<>();
-            lastPaths.add(path);
+            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            // ArrayList<oldPath> lastPaths = new ArrayList<>();
+            // lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Curly) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -412,9 +412,9 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.GroupCurly) root).atom, new oldPath(), limit, endNode, type));
 
-            // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
-            ArrayList<oldPath> lastPaths = new ArrayList<>();
-            lastPaths.add(path);
+            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            // ArrayList<oldPath> lastPaths = new ArrayList<>();
+            // lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.GroupCurly) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -501,7 +501,7 @@ public class Analyzer<comparePathLength> {
         // 具有实际字符意义
         else if (root instanceof Pattern.CharProperty){
             if(((Pattern.CharProperty) root).charSet.size() == 0){
-                generateCharSet((Pattern.CharProperty) root);
+                oldGenerateCharSet((Pattern.CharProperty) root);
             }
             path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
             result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
@@ -654,7 +654,7 @@ public class Analyzer<comparePathLength> {
 
     private static void oldGenerateCharSet(Pattern.CharProperty root) {
         // 默认的处理方法
-        for(int i = 0; i < 65536; i++){
+        for(int i = 0; i < 127; i++){
             if(root.isSatisfiedBy(i)){
                 root.charSet.add(i);
             }
