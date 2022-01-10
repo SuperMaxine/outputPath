@@ -75,6 +75,8 @@ public class Analyzer<comparePathLength> {
 
             // System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
             // printPaths(OneLoopPumpPaths.get(node));
+            // System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
+            // printPaths(OneLoopPrePaths.get(node));
 
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
             for (oldPath prePath : OneLoopPrePaths.get(node)) {
@@ -90,7 +92,7 @@ public class Analyzer<comparePathLength> {
                     // ArrayList<oldPath> forPrint = new ArrayList<>();
                     // forPrint.add(pumpPath);
                     // printPaths(forPrint);
-
+                    //
                     // System.out.println("new PumpPath");
                     // ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
                     // pumpCheck.add(pumpPath);
@@ -233,7 +235,11 @@ public class Analyzer<comparePathLength> {
     public ArrayList<oldPath> retrunPaths(Pattern.Node root, oldPath rawPath, int maxLength, Pattern.Node endNode, returnPathsType type){
         oldPath path = new oldPath(rawPath);
         ArrayList<oldPath> result = new ArrayList<>();
-        if (root instanceof Pattern.LastNode || root == null || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+        if (root == null || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+            result.add(path);
+            return result;
+        } else if (root instanceof Pattern.LastNode) {
+            path.reachEnd = true;
             result.add(path);
             return result;
         }else if (root == endNode){
@@ -251,7 +257,8 @@ public class Analyzer<comparePathLength> {
         // 1. 循环
         if (root instanceof Pattern.Prolog) {
             result.addAll(retrunPaths(((Pattern.Prolog)root).loop, path, maxLength, endNode, type));
-        } else if (root instanceof Pattern.Loop) {
+        }
+        else if (root instanceof Pattern.Loop) {
             int limit = maxLength - path.path.size();
 
             ArrayList<oldPath> nextPaths = new ArrayList<>();
@@ -324,7 +331,8 @@ public class Analyzer<comparePathLength> {
                 }
             }
 
-        } else if (root instanceof Pattern.Curly) {
+        }
+        else if (root instanceof Pattern.Curly) {
             int limit = maxLength - path.path.size();
 
             ArrayList<oldPath> nextPaths = new ArrayList<>();
@@ -394,7 +402,8 @@ public class Analyzer<comparePathLength> {
                 }
             }
 
-        } else if (root instanceof Pattern.GroupCurly) {
+        }
+        else if (root instanceof Pattern.GroupCurly) {
             int limit = maxLength - path.path.size();
 
             ArrayList<oldPath> nextPaths = new ArrayList<>();
