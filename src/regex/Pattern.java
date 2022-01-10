@@ -4595,6 +4595,18 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
             atoms[1] = second;
         }
 
+        public int getSize(){
+            int count = 0;
+            for (Node p : atoms) {
+                if (p == null) {
+                    continue;
+                } else {
+                    count++;
+                }
+            }
+            return count;
+        }
+
         void add(Node node) {
             if (size >= atoms.length) {
                 Node[] tmp = new Node[atoms.length*2];
