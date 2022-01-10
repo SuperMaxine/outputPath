@@ -68,18 +68,31 @@ public class Analyzer<comparePathLength> {
             OneLoopPrePaths.put(node, new ArrayList<>());
             retrunPaths(pattern.root, new oldPath(), maxLength, node, returnPathsType.pre);
 
-            // printPaths(OneLoopPumpPaths.get(node));
+            // 排序OneLoopPumpPaths.get(node)
+            Collections.sort(OneLoopPumpPaths.get(node), new Comparator<oldPath>() {
+                @Override
+                public int compare(oldPath o1, oldPath o2) {
+                    return o1.path.size() - o2.path.size();
+                }
+            });
+
+            System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
+            printPaths(OneLoopPumpPaths.get(node));
 
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
             for (oldPath prePath : OneLoopPrePaths.get(node)) {
-                for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-                // for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
-                //     oldPath pumpPath = new oldPath();
-                //     for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
-                //         getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
-                //     }
+                // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+                for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
+                    oldPath pumpPath = new oldPath();
+                    for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+                        getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+                    }
                     Enumerator preEnum = new Enumerator(prePath);
                     Enumerator pumpEnum = new Enumerator(pumpPath);
+
+                    ArrayList<oldPath> forPrint = new ArrayList<>();
+                    forPrint.add(pumpPath);
+                    printPaths(forPrint);
 
                     System.out.println("new PumpPath");
                     ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
@@ -223,7 +236,7 @@ public class Analyzer<comparePathLength> {
     public ArrayList<oldPath> retrunPaths(Pattern.Node root, oldPath rawPath, int maxLength, Pattern.Node endNode, returnPathsType type){
         oldPath path = new oldPath(rawPath);
         ArrayList<oldPath> result = new ArrayList<>();
-        if (root == null || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+        if (root instanceof Pattern.LastNode || root == null || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             result.add(path);
             return result;
         }else if (root == endNode){
@@ -233,7 +246,7 @@ public class Analyzer<comparePathLength> {
                 OneLoopPrePaths.get(endNode).add(path);
             }
             return result;
-        } else if (root instanceof Pattern.LastNode || path.path.size() > maxLength){
+        } else if (path.path.size() > maxLength){
             return result;
         }
 
@@ -250,8 +263,12 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.Loop) root).body, new oldPath(), limit, endNode, type));
 
-            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
-            // lastPaths.add(path);
+            // printPaths(thisCyclePath);
+            // System.out.println("-----------------------");
+
+            // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            ArrayList<oldPath> lastPaths = new ArrayList<>();
+            lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Loop) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -319,8 +336,9 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.Curly) root).atom, new oldPath(), limit, endNode, type));
 
-            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
-            // lastPaths.add(path);
+            // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            ArrayList<oldPath> lastPaths = new ArrayList<>();
+            lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Curly) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -388,8 +406,9 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.GroupCurly) root).atom, new oldPath(), limit, endNode, type));
 
-            ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
-            // lastPaths.add(path);
+            // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            ArrayList<oldPath> lastPaths = new ArrayList<>();
+            lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.GroupCurly) root).cmin; loopTime++) {
                 ArrayList<oldPath> thisPaths = new ArrayList<>();
                 Iterator iterator = lastPaths.iterator();
@@ -631,16 +650,16 @@ public class Analyzer<comparePathLength> {
 
 
     private static void generateCharSet(Pattern.CharProperty root){
-        // for(int i = 0; i < 65536; i++){
-        //     if(root.isSatisfiedBy(i)){
-        //         root.charSet.add(i);
-        //     }
-        // }
-        for (Integer c : fullCharSet) {
-            if (root.isSatisfiedBy(c)) {
-                root.charSet.add(c);
+        for(int i = 0; i < 65536; i++){
+            if(root.isSatisfiedBy(i)){
+                root.charSet.add(i);
             }
         }
+        // for (Integer c : fullCharSet) {
+        //     if (root.isSatisfiedBy(c)) {
+        //         root.charSet.add(c);
+        //     }
+        // }
     }
 
 
