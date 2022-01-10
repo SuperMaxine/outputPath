@@ -6116,10 +6116,10 @@ public final class redosPattern implements java.io.Serializable {
         // System.out.println("attack_string: " + attack_string);
         // System.out.println("attack_string length:" + attack_string.length());
 
-        System.out.println("attack_string: " );
-        System.out.println("x:" + prefix);
-        System.out.println("y:" + pump + "*" + max_length);
-        System.out.println("z:" + suffix);
+        // System.out.println("attack_string: " );
+        // System.out.println("x:" + prefix);
+        // System.out.println("y:" + pump + "*" + max_length);
+        // System.out.println("z:" + suffix);
 
         reodsMatcher m = matcher(attack_string, new Trace(threshold, false));
         Trace t = m.find();

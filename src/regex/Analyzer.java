@@ -8,7 +8,8 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
-
+    public boolean attackable = false;
+    public String attackMsg = "";
     Pattern pattern;
     int maxLength;
     static Set<Integer> fullSmallCharSet;
@@ -57,7 +58,7 @@ public class Analyzer<comparePathLength> {
 
         searchOneLoopNode(pattern.root, true);
 
-        System.out.println("OneLoopNodes: " + OneLoopNodes.size());
+        // System.out.println("OneLoopNodes: " + OneLoopNodes.size());
 
         for (Pattern.Node node : OneLoopNodes) {
             OneLoopPumpPaths.put(node, retrunPaths(node, new oldPath(), maxLength, node.next, returnPathsType.pump));
@@ -73,75 +74,79 @@ public class Analyzer<comparePathLength> {
                 }
             });
 
-            System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
-            printPaths(OneLoopPumpPaths.get(node));
-            System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
-            printPaths(OneLoopPrePaths.get(node));
+            // System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
+            // printPaths(OneLoopPumpPaths.get(node));
+            // System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
+            // printPaths(OneLoopPrePaths.get(node));
 
-            // redosPattern testPattern = redosPattern.compile(pattern.pattern());
-            // for (oldPath prePath : OneLoopPrePaths.get(node)) {
-            //     // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-            //     for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
-            //         oldPath pumpPath = new oldPath();
-            //         for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
-            //             getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
-            //         }
-            //         Enumerator preEnum = new Enumerator(prePath);
-            //         Enumerator pumpEnum = new Enumerator(pumpPath);
-            //
-            //         ArrayList<oldPath> forPrint = new ArrayList<>();
-            //         forPrint.add(pumpPath);
-            //         printPaths(forPrint);
-            //
-            //         System.out.println("new PumpPath");
-            //         ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
-            //         pumpCheck.add(pumpPath);
-            //         printPaths(pumpCheck);
-            //         System.out.println("new PrePath");
-            //         ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
-            //         preCheck.add(prePath);
-            //         printPaths(preCheck);
-            //
-            //         System.out.println("brfore while");
-            //
-            //         if (preEnum.Empty()) {
-            //             while (pumpEnum.hasNext()) {
-            //                 String pump = pumpEnum.next();
-            //                 System.out.println(pump);
-            //                 // if (pump.equals("aaa"))
-            //                 //     System.out.println("aaa");
-            //                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
-            //                 System.out.println(matchingStepCnt);
-            //                 // if (pump.equals("abca"))
-            //                 //     System.out.println("abca");
-            //                 if (matchingStepCnt > 1e5) {
-            //                     System.out.println("matchingStepCnt > 1e5");
-            //                     return;
-            //                 }
-            //                 // System.out.println("");
-            //             }
-            //         }
-            //         else {
-            //             while (preEnum.hasNext()) {
-            //                 String pre = preEnum.next();
-            //                 while (pumpEnum.hasNext()) {
-            //                     // System.out.println("brfore next");
-            //                     String pump = pumpEnum.next();
-            //                     // System.out.println(pre + pump);
-            //                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
-            //                     System.out.println(matchingStepCnt);
-            //                     if (matchingStepCnt > 1e5){
-            //                         System.out.println("matchingStepCnt > 1e5");
-            //                         return ;
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //
-            //
-            //         System.out.println("-----------------");
-            //     }
-            // }
+            redosPattern testPattern = redosPattern.compile(pattern.pattern());
+            for (oldPath prePath : OneLoopPrePaths.get(node)) {
+                // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+                for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
+                    oldPath pumpPath = new oldPath();
+                    for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+                        getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+                    }
+                    Enumerator preEnum = new Enumerator(prePath);
+                    Enumerator pumpEnum = new Enumerator(pumpPath);
+
+                    // ArrayList<oldPath> forPrint = new ArrayList<>();
+                    // forPrint.add(pumpPath);
+                    // printPaths(forPrint);
+                    //
+                    // System.out.println("new PumpPath");
+                    // ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
+                    // pumpCheck.add(pumpPath);
+                    // printPaths(pumpCheck);
+                    // System.out.println("new PrePath");
+                    // ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
+                    // preCheck.add(prePath);
+                    // printPaths(preCheck);
+                    //
+                    // System.out.println("brfore while");
+
+                    if (preEnum.Empty()) {
+                        while (pumpEnum.hasNext()) {
+                            String pump = pumpEnum.next();
+                            // System.out.println(pump);
+                            // if (pump.equals("aaa"))
+                            //     System.out.println("aaa");
+                            double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
+                            // System.out.println(matchingStepCnt);
+                            // if (pump.equals("abca"))
+                            //     System.out.println("abca");
+                            if (matchingStepCnt > 1e5) {
+                                // System.out.println("matchingStepCnt > 1e5");
+                                attackable = true;
+                                attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
+                                return;
+                            }
+                            // System.out.println("");
+                        }
+                    }
+                    else {
+                        while (preEnum.hasNext()) {
+                            String pre = preEnum.next();
+                            while (pumpEnum.hasNext()) {
+                                // System.out.println("brfore next");
+                                String pump = pumpEnum.next();
+                                // System.out.println(pre + pump);
+                                double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
+                                // System.out.println(matchingStepCnt);
+                                if (matchingStepCnt > 1e5){
+                                    attackable = true;
+                                    attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
+                                    // System.out.println("matchingStepCnt > 1e5");
+                                    // return ;
+                                }
+                            }
+                        }
+                    }
+
+
+                    // System.out.println("-----------------");
+                }
+            }
         }
 
 
@@ -201,8 +206,18 @@ public class Analyzer<comparePathLength> {
             searchOneLoopNode(root.next, record);
         }
 
-        else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
+        else if (root instanceof Pattern.SliceNode){
             for (int i : ((Pattern.SliceNode) root).buffer){
+                // Set<Integer> tmpCharSet = new HashSet<>();
+                fullSmallCharSet.add(i);
+                // path.path.add(tmpCharSet);
+            }
+            // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+            searchOneLoopNode(root.next, record);
+        }
+
+        else if (root instanceof Pattern.BnM){
+            for (int i : ((Pattern.BnM) root).buffer){
                 // Set<Integer> tmpCharSet = new HashSet<>();
                 fullSmallCharSet.add(i);
                 // path.path.add(tmpCharSet);
@@ -508,8 +523,17 @@ public class Analyzer<comparePathLength> {
             result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
         }
 
-        else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
+        else if (root instanceof Pattern.SliceNode){
             for (int i : ((Pattern.SliceNode) root).buffer){
+                Set<Integer> tmpCharSet = new HashSet<>();
+                tmpCharSet.add(i);
+                path.path.add(tmpCharSet);
+            }
+            result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+        }
+
+        else if (root instanceof Pattern.BnM){
+            for (int i : ((Pattern.BnM) root).buffer){
                 Set<Integer> tmpCharSet = new HashSet<>();
                 tmpCharSet.add(i);
                 path.path.add(tmpCharSet);

@@ -2,9 +2,7 @@ package com.company;
 
 import regex.*;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.*;
 
 /**
  * @author SuperMaxine
@@ -12,45 +10,80 @@ import java.util.Iterator;
 public class Main {
 
     public static void main(String[] args) {
-        // String regex = "^(a|\\w+)+$";
-        // String regex = "<\\*(?:[^<*]|\\*|<|<\\*(?:[\\s\\S])*\\*>)*\\*>";
-        // String regex = "^(a|(?=@bba)[@#]\\w+)+$";
+        FileInputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream("prism.txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        // BufferedWriter writer = null;
+        // try {
+        //     writer = new BufferedWriter(new FileWriter("prism_result.txt"));
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
 
-        // String regex = "^(a|(?=abc)\\w+)+$"; //success
-        // String regex = "(^[ \\t]*)\\[(?!\\[)(?:([\"'$`])(?:(?!\\2)[^\\\\]|\\\\.)*\\2|\\[(?:[^\\]\\\\]|\\\\.)*\\]|[^\\]\\\\]|\\\\.)*\\]"; //ReDos 41行 success
+        // 如果不存在result.txt文件，则创建
+        if (!new File("result.txt").exists()) {
+            try {
+                new File("result.txt").createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-        // String regex = "(?: ?\\/[a-z?](?:[ :](?:\\"[^\\\"]*\\"|\\S+))?)*"; // 画了图
-        String regex = "((?:^|[&(])[ \\t]*)for(?: ?\\/[a-z?](?:[ :](?:\"[^\"]*\"|\\S+))?)* \\S+ in \\([^)]+\\) do"; //ReDos 45行 //success
-        /*
-        x:for
-        y:/?:*50
-        / [a-z?] [ :]
-        z:\b
-        1.0000289E7
-          */
 
-        // String regex = "((?:^|[&(])[ \\t]*)if(?: ?\\/[a-z?](?:[ :](?:\"[^\"]*\"|\\S+))?)* (?:not )?(?:cmdextversion \\d+|defined \\w+|errorlevel \\d+|exist \\S+|(?:\"[^\"]*\"|\\S+)?(?:==| (?:equ|neq|lss|leq|gtr|geq) )(?:\"[^\"]*\"|\\S+))"; //ReDos 46行 success
-        /*
-        attack_string:
-        x:if
-        y:/?:*50
-        z:\b
-          */
+        // try {
+        //     BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
+        //     writer.write("Start");
+        //     writer.close();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
 
-        // String regex = "((?:^|[&(])[ \\t]*)set(?: ?\\/[a-z](?:[ :](?:\"[^\"]*\"|\\S+))?)* (?:[^^&)\\r\\n]|\\^(?:\\r\\n|[\\s\\S]))*"; //ReDos 47行 success
-        /*
-        x:set
-        y:/a:*50
-        z:\b
-        1.0000289E7
-          */
-        // String regex = "\"(?:[^\\\\\"\\r\\n]|\\\\(?:[abfnrtv\\\\\"]|\\d+|x[0-9a-fA-F]+))*\""; //ReDos 49行
-        // String regex = "^\\|={3,}(?:(?:\\r?\\n|\\r).*)*?(?:\\r?\\n|\\r)\\|={3,}$"; //ReDos 42行
-        // String regex = "(?:a|b(?:c|d+|ef+))*";
-        Pattern p = Pattern.compile(regex);
-        Pattern.printObjectTree(p.root);
-        Analyzer a = new Analyzer(p, 7);
+        String str = null;
+        while(true)
+        {
+            try {
+                if (!((str = bufferedReader.readLine()) != null)) break;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try{
+                Pattern p = Pattern.compile(str);
+                Analyzer a = new Analyzer(p, 7);
 
+
+                try {
+                    // System.out.println("write");
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
+                    writer.write(str + "\n" +String.valueOf(a.attackable) + "\n" + a.attackMsg + "\n\n");
+                    writer.close();
+                    // System.out.println("write done");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            } catch (Exception e) {
+                try {
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
+                    writer.write(str + "\n" + e.getMessage() + "\n\n");
+                    writer.close();
+                } catch (IOException ee) {
+                    ee.printStackTrace();
+                }
+            }
+
+        }
+
+        //close
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
     }
