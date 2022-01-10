@@ -68,68 +68,71 @@ public class Analyzer<comparePathLength> {
             OneLoopPrePaths.put(node, new ArrayList<>());
             retrunPaths(pattern.root, new oldPath(), maxLength, node, returnPathsType.pre);
 
-            // printPaths(OneLoopPumpPaths.get(node));
+            System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.size());
+            printPaths(OneLoopPumpPaths.get(node));
+            System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.size());
+            printPaths(OneLoopPrePaths.get(node));
 
-            redosPattern testPattern = redosPattern.compile(pattern.pattern());
-            for (oldPath prePath : OneLoopPrePaths.get(node)) {
-                for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-                // for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
-                //     oldPath pumpPath = new oldPath();
-                //     for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
-                //         getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
-                //     }
-                    Enumerator preEnum = new Enumerator(prePath);
-                    Enumerator pumpEnum = new Enumerator(pumpPath);
-
-                    System.out.println("new PumpPath");
-                    ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
-                    pumpCheck.add(pumpPath);
-                    printPaths(pumpCheck);
-                    System.out.println("new PrePath");
-                    ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
-                    preCheck.add(prePath);
-                    printPaths(preCheck);
-
-                    System.out.println("brfore while");
-
-                    if (preEnum.Empty()) {
-                        while (pumpEnum.hasNext()) {
-                            String pump = pumpEnum.next();
-                            System.out.println(pump);
-                            // if (pump.equals("aaa"))
-                            //     System.out.println("aaa");
-                            double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
-                            System.out.println(matchingStepCnt);
-                            // if (pump.equals("abca"))
-                            //     System.out.println("abca");
-                            if (matchingStepCnt > 1e5) {
-                                System.out.println("matchingStepCnt > 1e5");
-                                return;
-                            }
-                            // System.out.println("");
-                        }
-                    }
-                    else {
-                        while (preEnum.hasNext()) {
-                            String pre = preEnum.next();
-                            while (pumpEnum.hasNext()) {
-                                // System.out.println("brfore next");
-                                String pump = pumpEnum.next();
-                                // System.out.println(pre + pump);
-                                double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
-                                System.out.println(matchingStepCnt);
-                                if (matchingStepCnt > 1e5){
-                                    System.out.println("matchingStepCnt > 1e5");
-                                    return ;
-                                }
-                            }
-                        }
-                    }
-
-
-                    System.out.println("-----------------");
-                }
-            }
+            // redosPattern testPattern = redosPattern.compile(pattern.pattern());
+            // for (oldPath prePath : OneLoopPrePaths.get(node)) {
+            //     for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+            //     // for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
+            //     //     oldPath pumpPath = new oldPath();
+            //     //     for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+            //     //         getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+            //     //     }
+            //         Enumerator preEnum = new Enumerator(prePath);
+            //         Enumerator pumpEnum = new Enumerator(pumpPath);
+            //
+            //         System.out.println("new PumpPath");
+            //         ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
+            //         pumpCheck.add(pumpPath);
+            //         printPaths(pumpCheck);
+            //         System.out.println("new PrePath");
+            //         ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
+            //         preCheck.add(prePath);
+            //         printPaths(preCheck);
+            //
+            //         System.out.println("brfore while");
+            //
+            //         if (preEnum.Empty()) {
+            //             while (pumpEnum.hasNext()) {
+            //                 String pump = pumpEnum.next();
+            //                 System.out.println(pump);
+            //                 // if (pump.equals("aaa"))
+            //                 //     System.out.println("aaa");
+            //                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
+            //                 System.out.println(matchingStepCnt);
+            //                 // if (pump.equals("abca"))
+            //                 //     System.out.println("abca");
+            //                 if (matchingStepCnt > 1e5) {
+            //                     System.out.println("matchingStepCnt > 1e5");
+            //                     return;
+            //                 }
+            //                 // System.out.println("");
+            //             }
+            //         }
+            //         else {
+            //             while (preEnum.hasNext()) {
+            //                 String pre = preEnum.next();
+            //                 while (pumpEnum.hasNext()) {
+            //                     // System.out.println("brfore next");
+            //                     String pump = pumpEnum.next();
+            //                     // System.out.println(pre + pump);
+            //                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
+            //                     System.out.println(matchingStepCnt);
+            //                     if (matchingStepCnt > 1e5){
+            //                         System.out.println("matchingStepCnt > 1e5");
+            //                         return ;
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //
+            //
+            //         System.out.println("-----------------");
+            //     }
+            // }
         }
 
 
