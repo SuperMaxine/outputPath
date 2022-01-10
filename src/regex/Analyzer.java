@@ -1,10 +1,7 @@
 package regex;
 
-import javafx.util.Pair;
 import redos.regex.redosPattern;
 
-import java.awt.print.Printable;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -14,11 +11,11 @@ public class Analyzer<comparePathLength> {
 
     Pattern pattern;
     int maxLength;
-    static Set<Integer> fullCharSet;
+    static Set<Integer> fullSmallCharSet;
+    private static Map<Pattern.Node, Set<Integer>> bigCharSetMap;
     private ArrayList<Pattern.Node> OneLoopNodes;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPumpPaths;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
-    private Map<Pattern.Node, String> OneLoopPreString;
 
     enum returnPathsType{
         pump,
@@ -53,10 +50,10 @@ public class Analyzer<comparePathLength> {
         OneLoopNodes = new ArrayList<>();
         this.pattern = pattern;
         this.maxLength = maxLength;
-        this.fullCharSet = new HashSet<>();
+        fullSmallCharSet = new HashSet<>();
         OneLoopPumpPaths = new HashMap<>();
         OneLoopPrePaths = new HashMap<>();
-        OneLoopPreString = new HashMap<>();
+        bigCharSetMap = new HashMap<>();
 
         searchOneLoopNode(pattern.root, true);
 
@@ -76,8 +73,8 @@ public class Analyzer<comparePathLength> {
                 }
             });
 
-            System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
-            printPaths(OneLoopPumpPaths.get(node));
+            // System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
+            // printPaths(OneLoopPumpPaths.get(node));
 
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
             for (oldPath prePath : OneLoopPrePaths.get(node)) {
@@ -90,18 +87,18 @@ public class Analyzer<comparePathLength> {
                     Enumerator preEnum = new Enumerator(prePath);
                     Enumerator pumpEnum = new Enumerator(pumpPath);
 
-                    ArrayList<oldPath> forPrint = new ArrayList<>();
-                    forPrint.add(pumpPath);
-                    printPaths(forPrint);
+                    // ArrayList<oldPath> forPrint = new ArrayList<>();
+                    // forPrint.add(pumpPath);
+                    // printPaths(forPrint);
 
-                    System.out.println("new PumpPath");
-                    ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
-                    pumpCheck.add(pumpPath);
-                    printPaths(pumpCheck);
-                    System.out.println("new PrePath");
-                    ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
-                    preCheck.add(prePath);
-                    printPaths(preCheck);
+                    // System.out.println("new PumpPath");
+                    // ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
+                    // pumpCheck.add(pumpPath);
+                    // printPaths(pumpCheck);
+                    // System.out.println("new PrePath");
+                    // ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
+                    // preCheck.add(prePath);
+                    // printPaths(preCheck);
 
                     System.out.println("brfore while");
 
@@ -195,7 +192,7 @@ public class Analyzer<comparePathLength> {
         else if (root instanceof Pattern.CharProperty){
             if(((Pattern.CharProperty) root).charSet.size() == 0){
                 // generateCharSet((Pattern.CharProperty) root);
-                generateFullCharSet((Pattern.CharProperty) root);
+                generateFullSmallCharSet((Pattern.CharProperty) root);
             }
             // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
             // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
@@ -205,7 +202,7 @@ public class Analyzer<comparePathLength> {
         else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
             for (int i : ((Pattern.SliceNode) root).buffer){
                 // Set<Integer> tmpCharSet = new HashSet<>();
-                fullCharSet.add(i);
+                fullSmallCharSet.add(i);
                 // path.path.add(tmpCharSet);
             }
             // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
@@ -646,40 +643,102 @@ public class Analyzer<comparePathLength> {
     }
 
 
-
-
-
-    private static void generateCharSet(Pattern.CharProperty root){
+    private static void oldGenerateCharSet(Pattern.CharProperty root) {
+        // 默认的处理方法
         for(int i = 0; i < 65536; i++){
             if(root.isSatisfiedBy(i)){
                 root.charSet.add(i);
             }
         }
-        // for (Integer c : fullCharSet) {
-        //     if (root.isSatisfiedBy(c)) {
-        //         root.charSet.add(c);
-        //     }
-        // }
     }
 
 
-    private void generateFullCharSet(Pattern.CharProperty root){
-        Set<Integer> charSet = new HashSet<>();
-        for(int i = 0; i < 65536; i++){
-            charSet.add(i);
+    private static void generateCharSet(Pattern.CharProperty root){
+        // 默认的处理方法
+        // for(int i = 0; i < 65536; i++){
+        //     if(root.isSatisfiedBy(i)){
+        //         root.charSet.add(i);
+        //     }
+        // }
+
+        // 压缩字符集方法
+        // 如果已经生成过了，说明是小于30的直接使用
+        if (root.charSet.size() > 0){
+            return;
         }
-        if (charSet.size() > 60000) {
-            int count = 0;
-            for (Integer c : charSet) {
-                if (count >= 100) {
-                    return;
+        // 如果没有生成过，说明是大字符集
+        else {
+            Random rand = new Random();
+            Set<Integer> result = new HashSet<>();
+            for (Map.Entry<Pattern.Node, Set<Integer>> entry : bigCharSetMap.entrySet()) {
+                // System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+                if (entry.getKey() == root){
+                    // 加入root和fullSmallCharSet的交集
+                    // set2&set8
+                    result.addAll(entry.getValue());
+                    result.addAll(fullSmallCharSet);
+                    continue;
                 } else {
-                    count++;
-                    fullCharSet.add(c);
+                    // 加入和本bigCharSet的差集
+                    // (set2-set5)
+                    Set<Integer> tmp = new HashSet<>(bigCharSetMap.get(root));
+                    tmp.retainAll(entry.getValue());
+                    result.addAll(bigCharSetMap.get(root));
+
+                    // 随机加入一个root和本bigCharSet的并集-其他bigCharSet
+                    // random 1个(set2&set5-set7-set8)
+                    tmp = new HashSet<>();
+                    tmp.addAll(bigCharSetMap.get(root));
+                    tmp.addAll(entry.getValue());
+                    tmp.removeAll(fullSmallCharSet);
+                    for (Map.Entry<Pattern.Node, Set<Integer>> entry_ : bigCharSetMap.entrySet()) {
+                        if (entry_.getKey() == root || entry_.getKey() == entry.getKey()) {
+                            continue;
+                        } else {
+                            tmp.removeAll(entry_.getValue());
+                        }
+                    }
+
+                    if (tmp.size() > 0) {
+                        int index = rand.nextInt(tmp.size());
+                        Iterator<Integer> iter = tmp.iterator();
+                        for (int i = 0; i < index; i++) {
+                            iter.next();
+                        }
+                        result.add(iter.next());
+                    }
                 }
             }
+
+            // 最后random 1个(set2-set8)
+            Set<Integer>tmp = new HashSet<>(bigCharSetMap.get(root));
+            tmp.removeAll(fullSmallCharSet);
+            if (tmp.size() > 0) {
+                int index = rand.nextInt(tmp.size());
+                Iterator<Integer> iter = tmp.iterator();
+                for (int i = 0; i < index; i++) {
+                    iter.next();
+                }
+                result.add(iter.next());
+            }
+
+            root.charSet.addAll(result);
+        }
+    }
+
+
+    private void generateFullSmallCharSet(Pattern.CharProperty root){
+        Set<Integer> charSet = new HashSet<>();
+        for(int i = 0; i < 65536; i++){
+            if(root.isSatisfiedBy(i)){
+                charSet.add(i);
+            }
+        }
+        if (charSet.size() < 30) {
+            fullSmallCharSet.addAll(charSet);
+            root.charSet.addAll(charSet);
         } else {
-            fullCharSet.addAll(charSet);
+            bigCharSetMap.put(root, charSet);
         }
     }
 
@@ -707,7 +766,7 @@ public class Analyzer<comparePathLength> {
     private static Set<Integer> getNodeCharSet(Pattern.Node node){
         if(node instanceof Pattern.CharProperty){
             if(((Pattern.CharProperty) node).charSet.size()==0) {
-                generateCharSet((Pattern.CharProperty) node);
+                oldGenerateCharSet((Pattern.CharProperty) node);
             }
             return ((Pattern.CharProperty) node).charSet;
         }
