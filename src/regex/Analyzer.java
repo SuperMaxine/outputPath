@@ -15,6 +15,7 @@ public class Analyzer<comparePathLength> {
     private ArrayList<Pattern.Node> OneLoopNodes;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPumpPaths;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
+    private ArrayList<oldPath> fixedPrePaths;
 
     public static void printPatternStruct(Pattern.Node root){
         if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
@@ -150,6 +151,7 @@ public class Analyzer<comparePathLength> {
         OneLoopPumpPaths = new HashMap<>();
         OneLoopPrePaths = new HashMap<>();
         bigCharSetMap = new HashMap<>();
+        fixedPrePaths = new ArrayList<>();
 
         searchOneLoopNode(pattern.root, true);
 
@@ -166,11 +168,18 @@ public class Analyzer<comparePathLength> {
             // printPaths(OneLoopPumpPaths.get(node));
             // System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
             // printPaths(OneLoopPrePaths.get(node));
+        }
 
-            // Done: 单个counting验证的内容应该放在getPathOverlap同级
-            // 单个Counting
+        String regex = ".{0,3}";
+        Pattern p = Pattern.compile(regex);
+        fixedPrePaths = retrunPaths(p.root, new oldPath(), 3, p.root.next.next.next, returnPathsType.pump);
+        generateCharSet((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom);
+        bigCharSetMap.put(((Pattern.Curly)p.root.next).atom, ((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom).charSet);
+        generateAllBigCharSet();
+
+        // 单个Counting
+        for (Pattern.Node node : OneLoopNodes) {
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
-
             // 前缀变成前缀×中缀
             ArrayList<oldPath> newPrePaths = new ArrayList<>();
             for (oldPath rawPrePath : OneLoopPrePaths.get(node)) {
@@ -200,7 +209,7 @@ public class Analyzer<comparePathLength> {
                 // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
                 for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
                     oldPath pumpPath = new oldPath();
-                    for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+                    for (int j = i + 1; j < OneLoopPumpPaths.get(node).size(); j++) {
                         if (getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath)) {
                             Enumerator preEnum = new Enumerator(prePath);
                             Enumerator pumpEnum = new Enumerator(pumpPath);
@@ -246,9 +255,9 @@ public class Analyzer<comparePathLength> {
                                         // System.out.println(pre + pump);
                                         double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
                                         System.out.println(matchingStepCnt);
-                                        if (matchingStepCnt > 1e5){
+                                        if (matchingStepCnt > 1e5) {
                                             System.out.println("matchingStepCnt > 1e5");
-                                            return ;
+                                            return;
                                         }
                                     }
                                 }
@@ -262,7 +271,6 @@ public class Analyzer<comparePathLength> {
                 }
             }
         }
-
 
         // POA
         for(int i = 0; i < OneLoopNodes.size(); i++) {
@@ -1100,79 +1108,151 @@ public class Analyzer<comparePathLength> {
 
     private static void generateCharSet(Pattern.CharProperty root){
         // 默认的处理方法
-        // for(int i = 0; i < 65536; i++){
-        //     if(root.isSatisfiedBy(i)){
-        //         root.charSet.add(i);
-        //     }
-        // }
+        for(int i = 0; i < 65536; i++){
+            if(root.isSatisfiedBy(i)){
+                root.charSet.add(i);
+            }
+        }
 
         // 压缩字符集方法
         // 如果已经生成过了，说明是小于30的直接使用
-        if (root.charSet.size() > 0){
-            return;
+        // if (root.charSet.size() > 0){
+        //     return;
+        // }
+        // // 如果没有生成过，说明是大字符集
+        // else {
+        //     Random rand = new Random();
+        //     Set<Integer> result = new HashSet<>();
+        //
+        //     // set2&set8
+        //     Set<Integer> tmp;
+        //
+        //     for (Map.Entry<Pattern.Node, Set<Integer>> entry : bigCharSetMap.entrySet()) {
+        //         // System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        //         if (entry.getKey() == root){
+        //             // 加入root和fullSmallCharSet的交集
+        //             // set2&set8
+        //             tmp = new HashSet<>(entry.getValue());
+        //             tmp.retainAll(fullSmallCharSet);
+        //             result.addAll(tmp);
+        //             continue;
+        //         } else {
+        //             // 加入和本bigCharSet的差集
+        //             // (set2-set5)
+        //             tmp = new HashSet<>(bigCharSetMap.get(root));
+        //             tmp.removeAll(entry.getValue());
+        //             result.addAll(tmp);
+        //
+        //             // 随机加入一个root和本bigCharSet的并集-其他bigCharSet
+        //             // random 1个(set2&set5-set7-set8)
+        //             tmp = new HashSet<>(bigCharSetMap.get(root));
+        //             tmp.retainAll(entry.getValue());
+        //             tmp.removeAll(fullSmallCharSet);
+        //             for (Map.Entry<Pattern.Node, Set<Integer>> entry_ : bigCharSetMap.entrySet()) {
+        //                 if (entry_.getKey() == root || entry_.getKey() == entry.getKey()) {
+        //                     continue;
+        //                 } else {
+        //                     tmp.removeAll(entry_.getValue());
+        //                 }
+        //             }
+        //
+        //             if (tmp.size() > 0) {
+        //                 int index = rand.nextInt(tmp.size());
+        //                 Iterator<Integer> iter = tmp.iterator();
+        //                 for (int i = 0; i < index; i++) {
+        //                     iter.next();
+        //                 }
+        //                 result.add(iter.next());
+        //             }
+        //         }
+        //     }
+        //
+        //     // 最后random 1个(set2-set8)
+        //     tmp = new HashSet<>(bigCharSetMap.get(root));
+        //     tmp.removeAll(fullSmallCharSet);
+        //     if (tmp.size() > 0) {
+        //         int index = rand.nextInt(tmp.size());
+        //         Iterator<Integer> iter = tmp.iterator();
+        //         for (int i = 0; i < index; i++) {
+        //             iter.next();
+        //         }
+        //         result.add(iter.next());
+        //     }
+        //
+        //     root.charSet.addAll(result);
+        // }
+    }
+
+    private void generateAllBigCharSet(){
+        // 遍历化bigCharSetMap节点
+        for (Map.Entry<Pattern.Node, Set<Integer>> entry : bigCharSetMap.entrySet()) {
+            Pattern.CharProperty root = (Pattern.CharProperty) entry.getKey();
+            generateBigCharSet(root);
         }
-        // 如果没有生成过，说明是大字符集
-        else {
-            Random rand = new Random();
-            Set<Integer> result = new HashSet<>();
 
-            // set2&set8
-            Set<Integer> tmp;
+    }
 
-            for (Map.Entry<Pattern.Node, Set<Integer>> entry : bigCharSetMap.entrySet()) {
-                // System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-                if (entry.getKey() == root){
-                    // 加入root和fullSmallCharSet的交集
-                    // set2&set8
-                    tmp = new HashSet<>(entry.getValue());
-                    tmp.retainAll(fullSmallCharSet);
-                    result.addAll(tmp);
-                    continue;
-                } else {
-                    // 加入和本bigCharSet的差集
-                    // (set2-set5)
-                    tmp = new HashSet<>(bigCharSetMap.get(root));
-                    tmp.removeAll(entry.getValue());
-                    result.addAll(tmp);
+    private void generateBigCharSet(Pattern.CharProperty root){
+        Random rand = new Random();
+        Set<Integer> result = new HashSet<>();
 
-                    // 随机加入一个root和本bigCharSet的并集-其他bigCharSet
-                    // random 1个(set2&set5-set7-set8)
-                    tmp = new HashSet<>(bigCharSetMap.get(root));
-                    tmp.retainAll(entry.getValue());
-                    tmp.removeAll(fullSmallCharSet);
-                    for (Map.Entry<Pattern.Node, Set<Integer>> entry_ : bigCharSetMap.entrySet()) {
-                        if (entry_.getKey() == root || entry_.getKey() == entry.getKey()) {
-                            continue;
-                        } else {
-                            tmp.removeAll(entry_.getValue());
-                        }
-                    }
+        // set2&set8
+        Set<Integer> tmp;
 
-                    if (tmp.size() > 0) {
-                        int index = rand.nextInt(tmp.size());
-                        Iterator<Integer> iter = tmp.iterator();
-                        for (int i = 0; i < index; i++) {
-                            iter.next();
-                        }
-                        result.add(iter.next());
+        for (Map.Entry<Pattern.Node, Set<Integer>> entry : bigCharSetMap.entrySet()) {
+            // System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+            if (entry.getKey() == root){
+                // 加入root和fullSmallCharSet的交集
+                // set2&set8
+                tmp = new HashSet<>(entry.getValue());
+                tmp.retainAll(fullSmallCharSet);
+                result.addAll(tmp);
+                continue;
+            } else {
+                // 加入和本bigCharSet的差集
+                // (set2-set5)
+                tmp = new HashSet<>(bigCharSetMap.get(root));
+                tmp.removeAll(entry.getValue());
+                result.addAll(tmp);
+
+                // 随机加入一个root和本bigCharSet的并集-其他bigCharSet
+                // random 1个(set2&set5-set7-set8)
+                tmp = new HashSet<>(bigCharSetMap.get(root));
+                tmp.retainAll(entry.getValue());
+                tmp.removeAll(fullSmallCharSet);
+                for (Map.Entry<Pattern.Node, Set<Integer>> entry_ : bigCharSetMap.entrySet()) {
+                    if (entry_.getKey() == root || entry_.getKey() == entry.getKey()) {
+                        continue;
+                    } else {
+                        tmp.removeAll(entry_.getValue());
                     }
                 }
-            }
 
-            // 最后random 1个(set2-set8)
-            tmp = new HashSet<>(bigCharSetMap.get(root));
-            tmp.removeAll(fullSmallCharSet);
-            if (tmp.size() > 0) {
-                int index = rand.nextInt(tmp.size());
-                Iterator<Integer> iter = tmp.iterator();
-                for (int i = 0; i < index; i++) {
-                    iter.next();
+                if (tmp.size() > 0) {
+                    int index = rand.nextInt(tmp.size());
+                    Iterator<Integer> iter = tmp.iterator();
+                    for (int i = 0; i < index; i++) {
+                        iter.next();
+                    }
+                    result.add(iter.next());
                 }
-                result.add(iter.next());
             }
-
-            root.charSet.addAll(result);
         }
+
+        // 最后random 1个(set2-set8)
+        tmp = new HashSet<>(bigCharSetMap.get(root));
+        tmp.removeAll(fullSmallCharSet);
+        if (tmp.size() > 0) {
+            int index = rand.nextInt(tmp.size());
+            Iterator<Integer> iter = tmp.iterator();
+            for (int i = 0; i < index; i++) {
+                iter.next();
+            }
+            result.add(iter.next());
+        }
+
+        root.charSet = new HashSet<>();
+        root.charSet.addAll(result);
     }
 
 
@@ -1183,7 +1263,7 @@ public class Analyzer<comparePathLength> {
                 charSet.add(i);
             }
         }
-        if (charSet.size() < 30) {
+        if (charSet.size() < 128) {
             fullSmallCharSet.addAll(charSet);
             root.charSet.addAll(charSet);
         } else {

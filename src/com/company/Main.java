@@ -100,9 +100,9 @@ public class Main {
         // String regex = "\\s";
         // String regex = "[^()]";
         // String regex = "(function(?:\\s+[_$A-Za-z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*)?\\s*\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\))";
-        String regex = "^\\S+@\\S+\\.\\w+$";
+        // String regex = "^\\S+@\\S+\\.\\w+$";
         // String regex = "(\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\)\\s*=>)[\\s\\S]*";
-        // String regex = "(^[ \\t]*)(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)(?:(?:\\r?\\n|\\r)(?:\\1(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)))*(?:,$|\\{|(?=(?:\\r?\\n|\\r)(?:\\{|\\1[ \\t]+)))";
+        String regex = "(^[ \\t]*)(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)(?:(?:\\r?\\n|\\r)(?:\\1(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)))*(?:,$|\\{|(?=(?:\\r?\\n|\\r)(?:\\{|\\1[ \\t]+)))";
         /*
         "(a" + " ".repeat(i*10000) + "\n!\n";
          */
@@ -112,8 +112,13 @@ public class Main {
         // Pattern.printObjectTree(p.root);
         System.out.println("flowchart TD");
         Analyzer.printPatternStruct(p.root);
-        Analyzer a = new Analyzer(p, 8);
 
+        // 记录开始时间
+
+        long startTime = System.currentTimeMillis();
+        Analyzer a = new Analyzer(p, 8);
+        long endTime = System.currentTimeMillis();
+        System.out.println((endTime - startTime) + "ms");
 
 
     }
