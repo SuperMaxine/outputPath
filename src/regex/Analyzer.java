@@ -8,6 +8,8 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
+    public boolean attackable;
+    public String attackMsg;
     Pattern pattern;
     int maxLength;
     static Set<Integer> fullSmallCharSet;
@@ -245,7 +247,8 @@ public class Analyzer<comparePathLength> {
                                     // if (pump.equals("abca"))
                                     //     System.out.println("abca");
                                     if (matchingStepCnt > 1e5) {
-                                        System.out.println("matchingStepCnt > 1e5");
+                                        attackable = true;
+                                        attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
                                         return;
                                     }
                                     // System.out.println("");
@@ -261,7 +264,8 @@ public class Analyzer<comparePathLength> {
                                         double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
                                         System.out.println(matchingStepCnt);
                                         if (matchingStepCnt > 1e5) {
-                                            System.out.println("matchingStepCnt > 1e5");
+                                            attackable = true;
+                                            attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
                                             return;
                                         }
                                     }
@@ -532,7 +536,8 @@ public class Analyzer<comparePathLength> {
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
-                    System.out.println("matchingStepCnt > 1e5");
+                    attackable = true;
+                    attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
                     return true;
                 }
                 // System.out.println("");
