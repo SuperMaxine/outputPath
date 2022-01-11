@@ -16,6 +16,7 @@ public class Analyzer<comparePathLength> {
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPumpPaths;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
     private ArrayList<oldPath> fixedPrePaths;
+    private String rawPattern;
 
     public static void printPatternStruct(Pattern.Node root){
         if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
@@ -143,7 +144,7 @@ public class Analyzer<comparePathLength> {
         }
     }
 
-    public Analyzer(Pattern pattern, int maxLength){
+    public Analyzer(Pattern pattern, int maxLength, String rawPattern){
         OneLoopNodes = new ArrayList<>();
         this.pattern = pattern;
         this.maxLength = maxLength;
@@ -152,6 +153,7 @@ public class Analyzer<comparePathLength> {
         OneLoopPrePaths = new HashMap<>();
         bigCharSetMap = new HashMap<>();
         fixedPrePaths = new ArrayList<>();
+        this.rawPattern = rawPattern;
 
         searchOneLoopNode(pattern.root, true);
 
@@ -179,7 +181,7 @@ public class Analyzer<comparePathLength> {
 
         // 单个Counting
         for (Pattern.Node node : OneLoopNodes) {
-            redosPattern testPattern = redosPattern.compile(pattern.pattern());
+            redosPattern testPattern = redosPattern.compile(rawPattern);
             // 前缀变成\.{0,3}×前缀×中缀
             ArrayList<oldPath> newPrePaths = new ArrayList<>();
             for (oldPath rawPrePath : OneLoopPrePaths.get(node)) {
@@ -518,7 +520,7 @@ public class Analyzer<comparePathLength> {
     }
     
     private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum){
-        redosPattern testPattern = redosPattern.compile(pattern.pattern());
+        redosPattern testPattern = redosPattern.compile(rawPattern);
         if (preEnum.Empty()) {
             while (pumpEnum.hasNext()) {
                 String pump = pumpEnum.next();

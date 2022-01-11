@@ -100,7 +100,7 @@ public class Main {
         // String regex = "\\s";
         // String regex = "[^()]";
         // String regex = "(function(?:\\s+[_$A-Za-z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*)?\\s*\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\))";
-        String regex = "^\\S+@\\S+\\.\\w+$";
+        String regex = "^\\s+|\\s+$";
         // String regex = "(\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\)\\s*=>)[\\s\\S]*";
         // String regex = "(^[ \\t]*)(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)(?:(?:\\r?\\n|\\r)(?:\\1(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)))*(?:,$|\\{|(?=(?:\\r?\\n|\\r)(?:\\{|\\1[ \\t]+)))";
         /*
@@ -108,7 +108,7 @@ public class Main {
          */
         // TODO: 所有正则都在正则结尾加上[\s\S]*，用来生成路径
         // regex += "[\\s\\S]*";
-        Pattern p = Pattern.compile(regex);
+        Pattern p = Pattern.compile(regex + "[\\s\\S]*");
         // Pattern.printObjectTree(p.root);
         System.out.println("flowchart TD");
         Analyzer.printPatternStruct(p.root);
@@ -116,11 +116,13 @@ public class Main {
         // 记录开始时间
 
         long startTime = System.currentTimeMillis();
-        Analyzer a = new Analyzer(p, 8);
+        Analyzer a = new Analyzer(p, 8, regex);
         long endTime = System.currentTimeMillis();
         System.out.println((endTime - startTime) + "ms");
 
 
     }
+
+
 
 }
