@@ -8,6 +8,8 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
+    public boolean attackable;
+    public String attackMsg;
     Pattern pattern;
     int maxLength;
     static Set<Integer> fullSmallCharSet;
@@ -153,7 +155,7 @@ public class Analyzer<comparePathLength> {
 
         searchOneLoopNode(pattern.root, true);
 
-        System.out.println("OneLoopNodes: " + OneLoopNodes.size());
+        // System.out.println("OneLoopNodes: " + OneLoopNodes.size());
 
         // 获取每一个生成每一个Loop相关的数据，并进行OneLoop类型处理
         for (Pattern.Node node : OneLoopNodes) {
@@ -302,10 +304,10 @@ public class Analyzer<comparePathLength> {
                             if (getPathOverlap(OneLoopPumpPaths.get(OneLoopNodes.get(i)).get(k), OneLoopPumpPaths.get(OneLoopNodes.get(j)).get(l), pumpPath)) {
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
 
-                                ArrayList<oldPath> pumpCheck = new ArrayList<>();
-                                pumpCheck.add(pumpPath);
-                                printPaths(pumpCheck);
-                                System.out.println("-----------------");
+                                // ArrayList<oldPath> pumpCheck = new ArrayList<>();
+                                // pumpCheck.add(pumpPath);
+                                // printPaths(pumpCheck);
+                                // System.out.println("-----------------");
 
                                 for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
                                     Enumerator preEnum = new Enumerator(prePath);
@@ -352,10 +354,10 @@ public class Analyzer<comparePathLength> {
                             if (getPathOverlap(frontPaths.get(k), tailPaths.get(l), pumpPath)) {
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
 
-                                ArrayList<oldPath> pumpCheck = new ArrayList<>();
-                                pumpCheck.add(pumpPath);
-                                printPaths(pumpCheck);
-                                System.out.println("-----------------");
+                                // ArrayList<oldPath> pumpCheck = new ArrayList<>();
+                                // pumpCheck.add(pumpPath);
+                                // printPaths(pumpCheck);
+                                // System.out.println("-----------------");
 
                                 for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
                                     Enumerator preEnum = new Enumerator(prePath);
@@ -392,10 +394,10 @@ public class Analyzer<comparePathLength> {
                             if (getPathOverlap(frontPaths.get(k), headPaths.get(l), pumpPath)) {
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
 
-                                ArrayList<oldPath> pumpCheck = new ArrayList<>();
-                                pumpCheck.add(pumpPath);
-                                printPaths(pumpCheck);
-                                System.out.println("-----------------");
+                                // ArrayList<oldPath> pumpCheck = new ArrayList<>();
+                                // pumpCheck.add(pumpPath);
+                                // printPaths(pumpCheck);
+                                // System.out.println("-----------------");
 
                                 for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
                                     Enumerator preEnum = new Enumerator(prePath);
@@ -417,15 +419,17 @@ public class Analyzer<comparePathLength> {
         if (preEnum.Empty()) {
             while (pumpEnum.hasNext()) {
                 String pump = pumpEnum.next();
-                System.out.println(pump);
+                // System.out.println(pump);
                 // if (pump.equals("aaa"))
                 //     System.out.println("aaa");
                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 10000, 10000000);
-                System.out.println(matchingStepCnt);
+                // System.out.println(matchingStepCnt);
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
-                    System.out.println("matchingStepCnt > 1e5");
+                    // System.out.println("matchingStepCnt > 1e5");
+                    attackable = true;
+                    attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
                     return true;
                 }
                 // System.out.println("");
@@ -439,9 +443,11 @@ public class Analyzer<comparePathLength> {
                     String pump = pumpEnum.next();
                     // System.out.println(pre + pump);
                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
-                    System.out.println(matchingStepCnt);
+                    // System.out.println(matchingStepCnt);
                     if (matchingStepCnt > 1e5){
-                        System.out.println("matchingStepCnt > 1e5");
+                        // System.out.println("matchingStepCnt > 1e5");
+                        attackable = true;
+                        attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
                         return true;
                     }
                 }
