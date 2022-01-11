@@ -8,7 +8,6 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
-
     Pattern pattern;
     int maxLength;
     static Set<Integer> fullSmallCharSet;
@@ -17,7 +16,7 @@ public class Analyzer<comparePathLength> {
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPumpPaths;
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
 
-    public void printPatternStruct(Pattern.Node root){
+    public static void printPatternStruct(Pattern.Node root){
         if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             return;
         }
@@ -62,10 +61,10 @@ public class Analyzer<comparePathLength> {
 
         // 具有实际字符意义
         else if (root instanceof Pattern.CharProperty){
-            if(((Pattern.CharProperty) root).charSet.size() == 0){
-                // generateCharSet((Pattern.CharProperty) root);
-                printPatternStruct((Pattern.CharProperty) root);
-            }
+            // if(((Pattern.CharProperty) root).charSet.size() == 0){
+            //     // generateCharSet((Pattern.CharProperty) root);
+            //     printPatternStruct((Pattern.CharProperty) root);
+            // }
             // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
             // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
             printPatternStruct(root.next);
@@ -73,12 +72,12 @@ public class Analyzer<comparePathLength> {
         }
 
         else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
-            for (int i : ((Pattern.SliceNode) root).buffer){
-                // Set<Integer> tmpCharSet = new HashSet<>();
-                fullSmallCharSet.add(i);
-                // path.path.add(tmpCharSet);
-            }
-            // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+            // for (int i : ((Pattern.SliceNode) root).buffer){
+            //     // Set<Integer> tmpCharSet = new HashSet<>();
+            //     fullSmallCharSet.add(i);
+            //     // path.path.add(tmpCharSet);
+            // }
+            // // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
             printPatternStruct(root.next);
             System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
         }
@@ -113,8 +112,6 @@ public class Analyzer<comparePathLength> {
         }
 
     }
-
-
 
     enum returnPathsType{
         pump,
@@ -158,6 +155,7 @@ public class Analyzer<comparePathLength> {
 
         System.out.println("OneLoopNodes: " + OneLoopNodes.size());
 
+        // 获取每一个生成每一个Loop相关的数据，并进行OneLoop类型处理
         for (Pattern.Node node : OneLoopNodes) {
             OneLoopPumpPaths.put(node, retrunPaths(node, new oldPath(), maxLength, node.next, returnPathsType.pump));
             // OneLoopPrePaths.put(node, retrunPaths(pattern.root, new oldPath(), maxLength, node, returnPathsType.pre));
@@ -172,82 +170,365 @@ public class Analyzer<comparePathLength> {
                 }
             });
 
-            System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
-            printPaths(OneLoopPumpPaths.get(node));
-            System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
-            printPaths(OneLoopPrePaths.get(node));
+            // System.out.println("OneLoopPumpPaths: " + OneLoopPumpPaths.get(node).size());
+            // printPaths(OneLoopPumpPaths.get(node));
+            // System.out.println("OneLoopPrePaths: " + OneLoopPrePaths.get(node).size());
+            // printPaths(OneLoopPrePaths.get(node));
 
-            redosPattern testPattern = redosPattern.compile(pattern.pattern());
-            for (oldPath prePath : OneLoopPrePaths.get(node)) {
-                // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-                for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
-                    oldPath pumpPath = new oldPath();
-                    for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
-                        getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+            // TODO: 单个counting验证的内容应该放在getPathOverlap同级
+            // // 单个Counting
+            // redosPattern testPattern = redosPattern.compile(pattern.pattern());
+            // for (oldPath prePath : OneLoopPrePaths.get(node)) {
+            //     // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+            //     for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
+            //         oldPath pumpPath = new oldPath();
+            //         for (int j = i+1; j < OneLoopPumpPaths.get(node).size(); j++) {
+            //             getPathOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath);
+            //         }
+            //         Enumerator preEnum = new Enumerator(prePath);
+            //         Enumerator pumpEnum = new Enumerator(pumpPath);
+            //
+            //         ArrayList<oldPath> forPrint = new ArrayList<>();
+            //         forPrint.add(pumpPath);
+            //         printPaths(forPrint);
+            //
+            //         System.out.println("new PumpPath");
+            //         ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
+            //         pumpCheck.add(pumpPath);
+            //         printPaths(pumpCheck);
+            //         System.out.println("new PrePath");
+            //         ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
+            //         preCheck.add(prePath);
+            //         printPaths(preCheck);
+            //
+            //         System.out.println("brfore while");
+            //
+            //         if (preEnum.Empty()) {
+            //             while (pumpEnum.hasNext()) {
+            //                 String pump = pumpEnum.next();
+            //                 System.out.println(pump);
+            //                 // if (pump.equals("aaa"))
+            //                 //     System.out.println("aaa");
+            //                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
+            //                 System.out.println(matchingStepCnt);
+            //                 // if (pump.equals("abca"))
+            //                 //     System.out.println("abca");
+            //                 if (matchingStepCnt > 1e5) {
+            //                     System.out.println("matchingStepCnt > 1e5");
+            //                     return;
+            //                 }
+            //                 // System.out.println("");
+            //             }
+            //         }
+            //         else {
+            //             while (preEnum.hasNext()) {
+            //                 String pre = preEnum.next();
+            //                 while (pumpEnum.hasNext()) {
+            //                     // System.out.println("brfore next");
+            //                     String pump = pumpEnum.next();
+            //                     // System.out.println(pre + pump);
+            //                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
+            //                     System.out.println(matchingStepCnt);
+            //                     if (matchingStepCnt > 1e5){
+            //                         System.out.println("matchingStepCnt > 1e5");
+            //                         return ;
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //
+            //
+            //         System.out.println("-----------------");
+            //     }
+            // }
+        }
+
+
+        // POA
+        for(int i = 0; i < OneLoopNodes.size(); i++) {
+            for (int j = i + 1; j < OneLoopNodes.size(); j++) {
+                // 判断嵌套、直接相邻，以及夹着内容相邻
+                int type = 0; // 0为嵌套等不需要考虑的情况，1为两者直接相邻，2为两者夹着东西
+                Pattern.Node frontNode = null, backNode = null;
+                ArrayList<oldPath> midPaths = retrunPaths(OneLoopNodes.get(i).next, new oldPath(), maxLength, OneLoopNodes.get(j), returnPathsType.pump);
+                boolean reachEnd = false;
+                int mid = Integer.MAX_VALUE;
+                for (oldPath path : midPaths) {
+                    if (path.reachEnd) {
+                        reachEnd = true;
+                        if (path.path.size() < mid) mid = path.path.size();
                     }
-                    Enumerator preEnum = new Enumerator(prePath);
-                    Enumerator pumpEnum = new Enumerator(pumpPath);
-
-                    ArrayList<oldPath> forPrint = new ArrayList<>();
-                    forPrint.add(pumpPath);
-                    printPaths(forPrint);
-
-                    System.out.println("new PumpPath");
-                    ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
-                    pumpCheck.add(pumpPath);
-                    printPaths(pumpCheck);
-                    System.out.println("new PrePath");
-                    ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
-                    preCheck.add(prePath);
-                    printPaths(preCheck);
-
-                    System.out.println("brfore while");
-
-                    if (preEnum.Empty()) {
-                        while (pumpEnum.hasNext()) {
-                            String pump = pumpEnum.next();
-                            System.out.println(pump);
-                            // if (pump.equals("aaa"))
-                            //     System.out.println("aaa");
-                            double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
-                            System.out.println(matchingStepCnt);
-                            // if (pump.equals("abca"))
-                            //     System.out.println("abca");
-                            if (matchingStepCnt > 1e5) {
-                                System.out.println("matchingStepCnt > 1e5");
-                                return;
-                            }
-                            // System.out.println("");
+                }
+                if (reachEnd) {
+                    // 说明OneLoopNodes.get(j)在OneLoopNodes.get(i)的next路径上
+                    frontNode = OneLoopNodes.get(i);
+                    backNode = OneLoopNodes.get(j);
+                    //判断两者是否紧挨着
+                    if (mid == 0) type = 1;
+                    else {
+                        // 中间夹着内容
+                        type = 2;
+                    }
+                } else {
+                    midPaths = retrunPaths(OneLoopNodes.get(j).next, new oldPath(), maxLength, OneLoopNodes.get(i), returnPathsType.pump);
+                    reachEnd = false;
+                    mid = Integer.MAX_VALUE;
+                    for (oldPath path : midPaths) {
+                        if (path.reachEnd) {
+                            reachEnd = true;
+                            if (path.path.size() < mid) mid = path.path.size();
                         }
                     }
-                    else {
-                        while (preEnum.hasNext()) {
-                            String pre = preEnum.next();
-                            while (pumpEnum.hasNext()) {
-                                // System.out.println("brfore next");
-                                String pump = pumpEnum.next();
-                                // System.out.println(pre + pump);
-                                double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
-                                System.out.println(matchingStepCnt);
-                                if (matchingStepCnt > 1e5){
-                                    System.out.println("matchingStepCnt > 1e5");
-                                    return ;
+                    if (reachEnd) {
+                        // 说明OneLoopNodes.get(i)在OneLoopNodes.get(j)的next路径上
+                        frontNode = OneLoopNodes.get(i);
+                        backNode = OneLoopNodes.get(j);
+                        if (mid == 0) type = 1;
+                        else {
+                            // 中间夹着内容
+                            type = 2;
+                        }
+                    }
+                }
+                
+                if (type == 0) {
+                    continue;
+                } else if (type == 1) {
+                    // 两者直接相邻
+                    for (int k = 0; k < OneLoopPumpPaths.get(OneLoopNodes.get(i)).size(); k++) {
+                        for (int l = 0; l < OneLoopPumpPaths.get(OneLoopNodes.get(j)).size(); l++) {
+                            // 两个路径集合中的路径两两配对，求重叠路径
+                            oldPath pumpPath = new oldPath();
+                            if (getPathOverlap(OneLoopPumpPaths.get(OneLoopNodes.get(i)).get(k), OneLoopPumpPaths.get(OneLoopNodes.get(j)).get(l), pumpPath)) {
+                                Enumerator pumpEnum = new Enumerator(pumpPath);
+
+                                ArrayList<oldPath> pumpCheck = new ArrayList<>();
+                                pumpCheck.add(pumpPath);
+                                printPaths(pumpCheck);
+                                System.out.println("-----------------");
+
+                                for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
+                                    Enumerator preEnum = new Enumerator(prePath);
+                                    dynamicValidate(preEnum, pumpEnum);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                } else if (type == 2) {
+                    // \w+0\d+
+                    // 从midPaths中去除reachEnd为false的元素
+                    Iterator iterator = midPaths.iterator();
+                    while (iterator.hasNext()) {
+                        Object cur = iterator.next();
+                        if (!((oldPath)cur).reachEnd) {
+                            iterator.remove();
+                        }
+                    }
+                    ArrayList<oldPath> frontPaths = OneLoopPumpPaths.get(frontNode); //\w+
+                    ArrayList<oldPath> backPaths = OneLoopPumpPaths.get(backNode); //\d+
+
+                    // 获取0\d+（将midPaths分别缀在OneLoopNodes.get(j)的末尾）
+                    ArrayList<oldPath> tailPaths = new ArrayList<oldPath>();
+                    for (oldPath midp : midPaths) {
+                        for (oldPath backp : backPaths) {
+                            oldPath tmpPath = new oldPath();
+                            tmpPath.path.addAll(midp.path);
+                            tmpPath.path.addAll(backp.path);
+                            tailPaths.add(tmpPath);
+                        }
+                    }
+                    // 排序tailPaths
+                    Collections.sort((tailPaths), new Comparator<oldPath>() {
+                        @Override
+                        public int compare(oldPath o1, oldPath o2) {
+                            return o1.path.size() - o2.path.size();
+                        }
+                    });
+                    for (int k = 0; k < frontPaths.size(); k++) {
+                        for (int l = 0; l < tailPaths.size(); l++) {
+                            // 两个路径集合中的路径两两配对，求重叠路径
+                            oldPath pumpPath = new oldPath();
+                            if (getPathOverlap(frontPaths.get(k), tailPaths.get(l), pumpPath)) {
+                                Enumerator pumpEnum = new Enumerator(pumpPath);
+
+                                ArrayList<oldPath> pumpCheck = new ArrayList<>();
+                                pumpCheck.add(pumpPath);
+                                printPaths(pumpCheck);
+                                System.out.println("-----------------");
+
+                                for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
+                                    Enumerator preEnum = new Enumerator(prePath);
+                                    dynamicValidate(preEnum, pumpEnum);
+                                    return;
                                 }
                             }
                         }
                     }
 
+                    // 获取\w+0（将midPaths分别缀在OneLoopNodes.get(j)的末尾）
+                    ArrayList<oldPath> headPaths = new ArrayList<oldPath>();
+                    for (oldPath midp : midPaths) {
+                        for (oldPath backp : backPaths) {
+                            oldPath tmpPath = new oldPath();
+                            tmpPath.path.addAll(backp.path);
+                            tmpPath.path.addAll(midp.path);
+                            headPaths.add(tmpPath);
+                        }
+                    }
 
-                    System.out.println("-----------------");
+                    // 排序headPaths
+                    Collections.sort((headPaths), new Comparator<oldPath>() {
+                        @Override
+                        public int compare(oldPath o1, oldPath o2) {
+                            return o1.path.size() - o2.path.size();
+                        }
+                    });
+
+                    for (int k = 0; k < frontPaths.size(); k++) {
+                        for (int l = 0; l < tailPaths.size(); l++) {
+                            // 两个路径集合中的路径两两配对，求重叠路径
+                            oldPath pumpPath = new oldPath();
+                            if (getPathOverlap(frontPaths.get(k), headPaths.get(l), pumpPath)) {
+                                Enumerator pumpEnum = new Enumerator(pumpPath);
+
+                                ArrayList<oldPath> pumpCheck = new ArrayList<>();
+                                pumpCheck.add(pumpPath);
+                                printPaths(pumpCheck);
+                                System.out.println("-----------------");
+
+                                for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
+                                    Enumerator preEnum = new Enumerator(prePath);
+                                    dynamicValidate(preEnum, pumpEnum);
+                                    return;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
-
-
         System.out.println("[*] Analyzer done");
     }
+    
+    private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum){
+        redosPattern testPattern = redosPattern.compile(pattern.pattern());
+        if (preEnum.Empty()) {
+            while (pumpEnum.hasNext()) {
+                String pump = pumpEnum.next();
+                System.out.println(pump);
+                // if (pump.equals("aaa"))
+                //     System.out.println("aaa");
+                double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 10000, 10000000);
+                System.out.println(matchingStepCnt);
+                // if (pump.equals("abca"))
+                //     System.out.println("abca");
+                if (matchingStepCnt > 1e5) {
+                    System.out.println("matchingStepCnt > 1e5");
+                    return true;
+                }
+                // System.out.println("");
+            }
+        }
+        else {
+            while (preEnum.hasNext()) {
+                String pre = preEnum.next();
+                while (pumpEnum.hasNext()) {
+                    // System.out.println("brfore next");
+                    String pump = pumpEnum.next();
+                    // System.out.println(pre + pump);
+                    double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
+                    System.out.println(matchingStepCnt);
+                    if (matchingStepCnt > 1e5){
+                        System.out.println("matchingStepCnt > 1e5");
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
+    }
 
+    // 返回是否直接相邻，若不直接相邻，将夹着的内容放入mid
+    // private boolean onDirectNext(Pattern.Node node1, Pattern.Node node2, oldPath mid) {
+    //     // 判断两个节点是否嵌套
+    //     if (isNested(node1, node2)) {
+    //         return false;
+    //     }
+    //
+    //     ArrayList<oldPath> tmp = new ArrayList<>();
+    //     tmp.addAll(onDirectNextTravel(node1, node2, new oldPath()));
+    //     // 删除没有reachEnd的Path
+    // }
+
+    // private ArrayList<oldPath> onDirectNextTravel(Pattern.Node root, Pattern.Node endNode, oldPath rawPath) {
+    //     oldPath path = new oldPath(rawPath);
+    //     ArrayList<oldPath> result = new ArrayList<>();
+    //     if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+    //         result.add(path);
+    //         return result;
+    //     } else if (root == endNode) {
+    //         path.reachEnd = true;
+    //         result.add(path);
+    //         return result;
+    //     }
+    // }
+
+    public boolean isNested(Pattern.Node startNode, Pattern.Node endNode) {
+        if (startNode instanceof Pattern.Loop) {
+            return canReachEndNode(((Pattern.Loop)startNode).body, endNode);
+        } else if (startNode instanceof Pattern.Curly) {
+            return canReachEndNode(((Pattern.Curly)startNode).atom, endNode);
+        } else if (startNode instanceof Pattern.GroupCurly) {
+            return canReachEndNode(((Pattern.GroupCurly)startNode).atom, endNode);
+        } else {
+            throw new RuntimeException("not supported node type");
+        }
+    }
+
+    // 从root出发能否到达endNode
+    public boolean canReachEndNode(Pattern.Node root, Pattern.Node endNode) {
+        if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+            return false;
+        } else if (root == endNode) {
+            return true;
+        }
+
+        // 需要特殊处理的节点（下一个节点不在next或者不止在next）
+        if (root instanceof Pattern.Prolog) {
+            return(canReachEndNode(((Pattern.Prolog)root).loop, endNode));
+        } else if (root instanceof Pattern.Loop) {
+            return(canReachEndNode(((Pattern.Loop)root).body, endNode) || canReachEndNode(((Pattern.Loop)root).next, endNode));
+        } else if (root instanceof Pattern.Curly) {
+            return(canReachEndNode(((Pattern.Curly)root).atom, endNode) || canReachEndNode(((Pattern.Curly)root).next, endNode));
+        } else if (root instanceof Pattern.GroupCurly) {
+            return(canReachEndNode(((Pattern.GroupCurly)root).atom, endNode) || canReachEndNode(((Pattern.GroupCurly)root).next, endNode));
+        }
+
+        // 2. 分支
+        else if(root instanceof Pattern.Branch){
+            boolean result = false;
+            for(Pattern.Node node : ((Pattern.Branch)root).atoms){
+                if (node == null){
+                    continue;
+                }
+                if(canReachEndNode(node, endNode)) {
+                    result = true;
+                };
+            }
+            return result;
+        } else if(root instanceof Pattern.Ques){
+            return(canReachEndNode(((Pattern.Ques)root).atom, endNode) || canReachEndNode(((Pattern.Ques)root).next, endNode));
+        }
+
+        else {
+            return canReachEndNode(root.next, endNode);
+        }
+    }
+
+    // record用来排除lookaround中的counting
     public void searchOneLoopNode(Pattern.Node root, boolean record){
         if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             return;
@@ -423,6 +704,9 @@ public class Analyzer<comparePathLength> {
                         oldPath p = new oldPath();
                         p.path.addAll(p1.path);
                         p.path.addAll(p2.path);
+                        if (p2.reachEnd){
+                            p.reachEnd = true;
+                        }
                         if (p.path.size() < limit) {
                             result.add(p);
                         }
@@ -435,6 +719,9 @@ public class Analyzer<comparePathLength> {
                     oldPath p = new oldPath();
                     p.path.addAll(p1.path);
                     p.path.addAll(p2.path);
+                    if (p2.reachEnd){
+                        p.reachEnd = true;
+                    }
                     result.add(p);
                 }
             }
@@ -494,6 +781,9 @@ public class Analyzer<comparePathLength> {
                         oldPath p = new oldPath();
                         p.path.addAll(p1.path);
                         p.path.addAll(p2.path);
+                        if (p2.reachEnd){
+                            p.reachEnd = true;
+                        }
                         if (p.path.size() < limit) {
                             result.add(p);
                         }
@@ -506,6 +796,9 @@ public class Analyzer<comparePathLength> {
                     oldPath p = new oldPath();
                     p.path.addAll(p1.path);
                     p.path.addAll(p2.path);
+                    if (p2.reachEnd){
+                        p.reachEnd = true;
+                    }
                     result.add(p);
                 }
             }
@@ -565,6 +858,9 @@ public class Analyzer<comparePathLength> {
                         oldPath p = new oldPath();
                         p.path.addAll(p1.path);
                         p.path.addAll(p2.path);
+                        if (p2.reachEnd){
+                            p.reachEnd = true;
+                        }
                         if (p.path.size() < limit) {
                             result.add(p);
                         }
@@ -577,6 +873,9 @@ public class Analyzer<comparePathLength> {
                     oldPath p = new oldPath();
                     p.path.addAll(p1.path);
                     p.path.addAll(p2.path);
+                    if (p2.reachEnd){
+                        p.reachEnd = true;
+                    }
                     result.add(p);
                 }
             }
