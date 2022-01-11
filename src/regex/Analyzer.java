@@ -806,26 +806,30 @@ public class Analyzer<comparePathLength> {
         else {
             Random rand = new Random();
             Set<Integer> result = new HashSet<>();
+
+            // set2&set8
+            Set<Integer> tmp;
+
             for (Map.Entry<Pattern.Node, Set<Integer>> entry : bigCharSetMap.entrySet()) {
                 // System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
                 if (entry.getKey() == root){
                     // 加入root和fullSmallCharSet的交集
                     // set2&set8
-                    result.addAll(entry.getValue());
-                    result.addAll(fullSmallCharSet);
+                    tmp = new HashSet<>(entry.getValue());
+                    tmp.retainAll(fullSmallCharSet);
+                    result.addAll(tmp);
                     continue;
                 } else {
                     // 加入和本bigCharSet的差集
                     // (set2-set5)
-                    Set<Integer> tmp = new HashSet<>(bigCharSetMap.get(root));
-                    tmp.retainAll(entry.getValue());
-                    result.addAll(bigCharSetMap.get(root));
+                    tmp = new HashSet<>(bigCharSetMap.get(root));
+                    tmp.removeAll(entry.getValue());
+                    result.addAll(tmp);
 
                     // 随机加入一个root和本bigCharSet的并集-其他bigCharSet
                     // random 1个(set2&set5-set7-set8)
-                    tmp = new HashSet<>();
-                    tmp.addAll(bigCharSetMap.get(root));
-                    tmp.addAll(entry.getValue());
+                    tmp = new HashSet<>(bigCharSetMap.get(root));
+                    tmp.retainAll(entry.getValue());
                     tmp.removeAll(fullSmallCharSet);
                     for (Map.Entry<Pattern.Node, Set<Integer>> entry_ : bigCharSetMap.entrySet()) {
                         if (entry_.getKey() == root || entry_.getKey() == entry.getKey()) {
@@ -847,7 +851,7 @@ public class Analyzer<comparePathLength> {
             }
 
             // 最后random 1个(set2-set8)
-            Set<Integer>tmp = new HashSet<>(bigCharSetMap.get(root));
+            tmp = new HashSet<>(bigCharSetMap.get(root));
             tmp.removeAll(fullSmallCharSet);
             if (tmp.size() > 0) {
                 int index = rand.nextInt(tmp.size());
