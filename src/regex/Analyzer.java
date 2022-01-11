@@ -206,7 +206,7 @@ public class Analyzer<comparePathLength> {
                     if (preEnum.Empty()) {
                         while (pumpEnum.hasNext()) {
                             String pump = pumpEnum.next();
-                            System.out.println(pump);
+                            // System.out.println(pump);
                             // if (pump.equals("aaa"))
                             //     System.out.println("aaa");
                             double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);

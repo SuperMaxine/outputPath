@@ -28,20 +28,20 @@ public class Main {
             }
         }
 
-        ExecutorService es = Executors.newFixedThreadPool(1);
+        ExecutorService es;
 
         String str = null;
         while(true)
         {
+            es = Executors.newFixedThreadPool(1);
             try {
                 if (!((str = bufferedReader.readLine()) != null)) break;
-                System.out.println(str);
                 Future<?> future = es.submit( new Mythread(str) );
                 try {
                     future.get(30, TimeUnit.SECONDS); // This waits timeout seconds; returns null
                 } catch(TimeoutException e) {
                     future.cancel(true);
-                    System.out.println("Timeout");
+                    System.out.println("Timeout\n\n");
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
                         writer.write(str + "\n" + "Timeout" + "\n\n");
@@ -80,6 +80,7 @@ public class Main {
         @Override
         public void run()
         {
+            System.out.println(str);
             try{
                 Pattern p = Pattern.compile(str);
                 Analyzer a = new Analyzer(p, 7);
@@ -89,6 +90,7 @@ public class Main {
                     BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
                     writer.write(str + "\n" +String.valueOf(a.attackable) + "\n" + a.attackMsg + "\n\n");
                     writer.close();
+                    System.out.println("\n" +String.valueOf(a.attackable) + "\n" + a.attackMsg + "\n\n");
                     // System.out.println("write done");
                 } catch (IOException e) {
                     e.printStackTrace();
