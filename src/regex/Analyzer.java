@@ -180,14 +180,17 @@ public class Analyzer<comparePathLength> {
         // 单个Counting
         for (Pattern.Node node : OneLoopNodes) {
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
-            // 前缀变成前缀×中缀
+            // 前缀变成\.{0,3}×前缀×中缀
             ArrayList<oldPath> newPrePaths = new ArrayList<>();
             for (oldPath rawPrePath : OneLoopPrePaths.get(node)) {
                 for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-                    oldPath newPrePath = new oldPath();
-                    newPrePath.path.addAll(rawPrePath.path);
-                    newPrePath.path.addAll(pumpPath.path);
-                    newPrePaths.add(newPrePath);
+                    for (oldPath fixedPrePath : fixedPrePaths) {
+                        oldPath newPrePath = new oldPath();
+                        newPrePath.path.addAll(fixedPrePath.path);
+                        newPrePath.path.addAll(rawPrePath.path);
+                        newPrePath.path.addAll(pumpPath.path);
+                        newPrePaths.add(newPrePath);
+                    }
                 }
             }
 
@@ -335,14 +338,17 @@ public class Analyzer<comparePathLength> {
                         }
                     }
 
-                    // 前缀变成前缀×中缀
+                    // \.{0,3}×前缀×中缀
                     ArrayList<oldPath> newPrePaths = new ArrayList<>();
                     for (oldPath rawPrePath : OneLoopPrePaths.get(frontNode)) {
                         for (oldPath pumpPath : pumpPaths) {
-                            oldPath newPrePath = new oldPath();
-                            newPrePath.path.addAll(rawPrePath.path);
-                            newPrePath.path.addAll(pumpPath.path);
-                            newPrePaths.add(newPrePath);
+                            for (oldPath fixedPrePath : fixedPrePaths) {
+                                oldPath newPrePath = new oldPath();
+                                newPrePath.path.addAll(fixedPrePath.path);
+                                newPrePath.path.addAll(rawPrePath.path);
+                                newPrePath.path.addAll(pumpPath.path);
+                                newPrePaths.add(newPrePath);
+                            }
                         }
                     }
 
@@ -404,14 +410,17 @@ public class Analyzer<comparePathLength> {
                         }
                     }
 
-                    // 前缀变成前缀×中缀
+                    // \.{0,3}×前缀×中缀
                     ArrayList<oldPath> newPrePaths = new ArrayList<>();
                     for (oldPath rawPrePath : OneLoopPrePaths.get(frontNode)) {
                         for (oldPath pumpPath : pumpPaths) {
-                            oldPath newPrePath = new oldPath();
-                            newPrePath.path.addAll(rawPrePath.path);
-                            newPrePath.path.addAll(pumpPath.path);
-                            newPrePaths.add(newPrePath);
+                            for (oldPath fixedPrePath : fixedPrePaths) {
+                                oldPath newPrePath = new oldPath();
+                                newPrePath.path.addAll(fixedPrePath.path);
+                                newPrePath.path.addAll(rawPrePath.path);
+                                newPrePath.path.addAll(pumpPath.path);
+                                newPrePaths.add(newPrePath);
+                            }
                         }
                     }
 
@@ -460,14 +469,17 @@ public class Analyzer<comparePathLength> {
                         }
                     }
 
-                    // 前缀变成前缀×中缀
+                    // \.{0,3}×前缀×中缀
                     newPrePaths = new ArrayList<>();
                     for (oldPath rawPrePath : OneLoopPrePaths.get(frontNode)) {
                         for (oldPath pumpPath : pumpPaths) {
-                            oldPath newPrePath = new oldPath();
-                            newPrePath.path.addAll(rawPrePath.path);
-                            newPrePath.path.addAll(pumpPath.path);
-                            newPrePaths.add(newPrePath);
+                            for (oldPath fixedPrePath : fixedPrePaths) {
+                                oldPath newPrePath = new oldPath();
+                                newPrePath.path.addAll(fixedPrePath.path);
+                                newPrePath.path.addAll(rawPrePath.path);
+                                newPrePath.path.addAll(pumpPath.path);
+                                newPrePaths.add(newPrePath);
+                            }
                         }
                     }
 
