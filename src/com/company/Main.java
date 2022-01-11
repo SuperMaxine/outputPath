@@ -101,11 +101,13 @@ public class Main {
         // String regex = "[^()]";
         // String regex = "(function(?:\\s+[_$A-Za-z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*)?\\s*\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\))";
         // String regex = "^\\S+@\\S+\\.\\w+$";
-        String regex = "(\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\)\\s*=>)[\\s\\S]*";
+        // String regex = "(\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\)\\s*=>)[\\s\\S]*";
+        String regex = "(^[ \\t]*)(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)(?:(?:\\r?\\n|\\r)(?:\\1(?:(?=\\S)(?:[^{}\\r\\n:()]|::?[\\w-]+(?:\\([^)\\r\\n]*\\))?|\\{[^}\\r\\n]+\\})+)))*(?:,$|\\{|(?=(?:\\r?\\n|\\r)(?:\\{|\\1[ \\t]+)))";
         /*
         "(a" + " ".repeat(i*10000) + "\n!\n";
          */
-        // TODO: 如果带lookaround，在正则结尾加上[\s\S]*，用来生成路径
+        // TODO: 所有正则都在正则结尾加上[\s\S]*，用来生成路径
+        regex += "[\\s\\S]*";
         Pattern p = Pattern.compile(regex);
         // Pattern.printObjectTree(p.root);
         System.out.println("flowchart TD");

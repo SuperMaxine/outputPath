@@ -178,7 +178,19 @@ public class Analyzer<comparePathLength> {
             // Done: 单个counting验证的内容应该放在getPathOverlap同级
             // 单个Counting
             redosPattern testPattern = redosPattern.compile(pattern.pattern());
-            for (oldPath prePath : OneLoopPrePaths.get(node)) {
+
+            // 前缀变成前缀×中缀
+            ArrayList<oldPath> newPrePaths = new ArrayList<>();
+            for (oldPath rawPrePath : OneLoopPrePaths.get(node)) {
+                for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+                    oldPath newPrePath = new oldPath();
+                    newPrePath.path.addAll(rawPrePath.path);
+                    newPrePath.path.addAll(pumpPath.path);
+                    newPrePaths.add(newPrePath);
+                }
+            }
+
+            for (oldPath prePath : newPrePaths) {
                 // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
                 for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
                     oldPath pumpPath = new oldPath();
@@ -309,6 +321,8 @@ public class Analyzer<comparePathLength> {
                                 System.out.println("pump:");
                                 printPaths(pumpCheck);
                                 // System.out.println("-----------------");
+
+
 
                                 for (oldPath prePath : OneLoopPrePaths.get(frontNode)) {
 
