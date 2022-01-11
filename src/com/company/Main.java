@@ -107,7 +107,7 @@ public class Main {
         "(a" + " ".repeat(i*10000) + "\n!\n";
          */
         // TODO: 所有正则都在正则结尾加上[\s\S]*，用来生成路径
-        regex += "[\\s\\S]*";
+        // regex += "[\\s\\S]*";
         Pattern p = Pattern.compile(regex);
         // Pattern.printObjectTree(p.root);
         System.out.println("flowchart TD");
