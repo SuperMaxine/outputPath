@@ -8,8 +8,8 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
-    public boolean attackable;
-    public String attackMsg;
+    public boolean attackable = false;
+    public String attackMsg = "";
     Pattern pattern;
     int maxLength;
     static Set<Integer> fullSmallCharSet;
@@ -19,6 +19,7 @@ public class Analyzer<comparePathLength> {
     private Map<Pattern.Node, ArrayList<oldPath>> OneLoopPrePaths;
     private ArrayList<oldPath> fixedPrePaths;
     private String rawPattern;
+    private boolean lookaround;
 
     public static void printPatternStruct(Pattern.Node root){
         if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
@@ -156,10 +157,11 @@ public class Analyzer<comparePathLength> {
         bigCharSetMap = new HashMap<>();
         fixedPrePaths = new ArrayList<>();
         this.rawPattern = rawPattern;
+        lookaround = false;
 
         searchOneLoopNode(pattern.root, true);
 
-        System.out.println("OneLoopNodes: " + OneLoopNodes.size());
+        // System.out.println("OneLoopNodes: " + OneLoopNodes.size());
 
         // 获取每一个生成每一个Loop相关的数据，并进行OneLoop类型处理
         for (Pattern.Node node : OneLoopNodes) {
@@ -221,34 +223,34 @@ public class Analyzer<comparePathLength> {
                             Enumerator preEnum = new Enumerator(prePath);
                             Enumerator pumpEnum = new Enumerator(pumpPath);
 
-                            ArrayList<oldPath> forPrint = new ArrayList<>();
-                            forPrint.add(pumpPath);
-                            printPaths(forPrint);
-
-                            System.out.println("new PumpPath");
-                            ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
-                            pumpCheck.add(pumpPath);
-                            printPaths(pumpCheck);
-                            System.out.println("new PrePath");
-                            ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
-                            preCheck.add(prePath);
-                            printPaths(preCheck);
-
-                            System.out.println("brfore while");
+                            // ArrayList<oldPath> forPrint = new ArrayList<>();
+                            // forPrint.add(pumpPath);
+                            // printPaths(forPrint);
+                            //
+                            // System.out.println("new PumpPath");
+                            // ArrayList<oldPath> pumpCheck = new ArrayList<oldPath>();
+                            // pumpCheck.add(pumpPath);
+                            // printPaths(pumpCheck);
+                            // System.out.println("new PrePath");
+                            // ArrayList<oldPath> preCheck = new ArrayList<oldPath>();
+                            // preCheck.add(prePath);
+                            // printPaths(preCheck);
+                            //
+                            // System.out.println("brfore while");
 
                             if (preEnum.Empty()) {
                                 while (pumpEnum.hasNext()) {
                                     String pump = pumpEnum.next();
-                                    System.out.println(pump);
+                                    // System.out.println(pump);
                                     // if (pump.equals("aaa"))
                                     //     System.out.println("aaa");
                                     double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
-                                    System.out.println(matchingStepCnt);
+                                    // System.out.println(matchingStepCnt);
                                     // if (pump.equals("abca"))
                                     //     System.out.println("abca");
                                     if (matchingStepCnt > 1e5) {
                                         attackable = true;
-                                        attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
+                                        attackMsg = "OneCounting\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                                         return;
                                     }
                                     // System.out.println("");
@@ -262,10 +264,10 @@ public class Analyzer<comparePathLength> {
                                         String pump = pumpEnum.next();
                                         // System.out.println(pre + pump);
                                         double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
-                                        System.out.println(matchingStepCnt);
+                                        // System.out.println(matchingStepCnt);
                                         if (matchingStepCnt > 1e5) {
                                             attackable = true;
-                                            attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
+                                            attackMsg = "OneCounting\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                                             return;
                                         }
                                     }
@@ -273,7 +275,7 @@ public class Analyzer<comparePathLength> {
                             }
 
 
-                            System.out.println("-----------------");
+                            // System.out.println("-----------------");
                         }
                     }
 
@@ -520,7 +522,7 @@ public class Analyzer<comparePathLength> {
         // SQL
         // 获取所有root到counting的路径
 
-        System.out.println("[*] Analyzer done");
+        // System.out.println("[*] Analyzer done");
     }
     
     private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum){
@@ -528,16 +530,16 @@ public class Analyzer<comparePathLength> {
         if (preEnum.Empty()) {
             while (pumpEnum.hasNext()) {
                 String pump = pumpEnum.next();
-                System.out.println(pump);
+                // System.out.println(pump);
                 // if (pump.equals("aaa"))
                 //     System.out.println("aaa");
                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 10000, 10000000);
-                System.out.println(matchingStepCnt);
+                // System.out.println(matchingStepCnt);
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
                     attackable = true;
-                    attackMsg = "prefix: \n" + "pump:" + pump + "\nsuffix:\\b";
+                    attackMsg = "POA\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                     return true;
                 }
                 // System.out.println("");
@@ -551,9 +553,11 @@ public class Analyzer<comparePathLength> {
                     String pump = pumpEnum.next();
                     // System.out.println(pre + pump);
                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 10000, 10000000);
-                    System.out.println(matchingStepCnt);
+                    // System.out.println(matchingStepCnt);
                     if (matchingStepCnt > 1e5){
-                        System.out.println("matchingStepCnt > 1e5");
+                        // System.out.println("matchingStepCnt > 1e5");
+                        attackable = true;
+                        attackMsg = "POA\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                         return true;
                     }
                 }
@@ -639,15 +643,19 @@ public class Analyzer<comparePathLength> {
 
         // lookaround处理
         else if (root instanceof Pattern.Pos){
+            lookaround = true;
             searchOneLoopNode(((Pattern.Pos)root).cond, false);
             searchOneLoopNode(((Pattern.Pos)root).next, record);
         }else if (root instanceof Pattern.Neg){
+            lookaround = true;
             searchOneLoopNode(((Pattern.Neg)root).cond, false);
             searchOneLoopNode(((Pattern.Neg)root).next, record);
         }else if (root instanceof Pattern.Behind){
+            lookaround = true;
             searchOneLoopNode(((Pattern.Behind)root).cond, false);
             searchOneLoopNode(((Pattern.Behind)root).next, record);
         }else if (root instanceof Pattern.NotBehind){
+            lookaround = true;
             searchOneLoopNode(((Pattern.NotBehind)root).cond, false);
             searchOneLoopNode(((Pattern.NotBehind)root).next, record);
         }

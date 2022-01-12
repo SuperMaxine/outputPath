@@ -29,37 +29,17 @@ public class Main {
         }
 
         ExecutorService es;
-
+        int count = 0;
         String str = null;
         while(true)
         {
-            es = Executors.newFixedThreadPool(1);
             try {
                 if (!((str = bufferedReader.readLine()) != null)) break;
-                Future<?> future = es.submit( new Mythread(str) );
-                try {
-                    future.get(30, TimeUnit.SECONDS); // This waits timeout seconds; returns null
-                } catch(TimeoutException e) {
-                    future.cancel(true);
-                    System.out.println("Timeout\n\n");
-                    try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
-                        writer.write(str + "\n" + "Timeout" + "\n\n");
-                        writer.close();
-                    } catch (IOException ee) {
-                        ee.printStackTrace();
-                    }
-                } catch (InterruptedException e) {
-                    future.cancel(true);
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    future.cancel(true);
-                    e.printStackTrace();
-                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            count ++ ;
+            regexAnalyzeLimitTime(str, count);
         }
 
         //close
@@ -72,41 +52,65 @@ public class Main {
 
     }
 
-    public static class Mythread implements Runnable {
-        private String str;
-        public Mythread(String str){
-            this.str = str;
+    static class attackResult{
+        public boolean attackable;
+        public String attackMsg;
+
+        public attackResult(){
+            attackable = false;
+            attackMsg = "";
         }
-        @Override
-        public void run()
-        {
-            System.out.println(str);
-            try{
-                Pattern p = Pattern.compile(str + "[\\s\\S]*");
-                Analyzer a = new Analyzer(p, 10, str);
 
+        public attackResult(boolean attackable, String attackMsg){
+            this.attackable = attackable;
+            this.attackMsg = attackMsg;
+        }
+    }
+
+    private static void regexAnalyzeLimitTime(String regex, int id) {
+        attackResult attackMsg;
+        final ExecutorService exec = Executors.newFixedThreadPool(1);
+        Callable<attackResult> call = new Callable<attackResult>() {
+            @Override
+            public attackResult call() throws Exception {
+                //开始执行耗时操作 ，这个方法为你要限制执行时间的方法
                 try {
-                    // System.out.println("write");
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
-                    writer.write(str + "\n" +String.valueOf(a.attackable) + "\n" + a.attackMsg + "\n\n");
-                    writer.close();
-                    System.out.println("\n" +String.valueOf(a.attackable) + "\n" + a.attackMsg + "\n\n");
-                    // System.out.println("write done");
-                } catch (IOException e) {
+                    Pattern p = Pattern.compile(regex + "[\\s\\S]*");
+                    Analyzer a = new Analyzer(p, 10, regex);
+                    return new attackResult(a.attackable, a.attackMsg);
+                } catch (Exception e) {
                     e.printStackTrace();
-                }
-
-
-            } catch (Exception e) {
-                try {
-                    BufferedWriter writer = new BufferedWriter(new FileWriter("result.txt", true));
-                    writer.write(str + "\n" + e.getMessage() + "\n\n");
-                    writer.close();
-                } catch (IOException ee) {
-                    ee.printStackTrace();
+                    return new attackResult(false, e.toString());
                 }
             }
+        };
+        String result = "";
+        try {
+            Future<attackResult> future = exec.submit(call);
+            //返回值类型为限制的方法的返回值类型
+            attackMsg = future.get(1000 * 30, TimeUnit.MILLISECONDS); //任务处理超时时间设为 5 秒
+
+            result += "id:" + id + "\n" + regex + "\n" + attackMsg.attackable + "\n" + attackMsg.attackMsg + "\n\n";
+        } catch (TimeoutException ex) {
+            result += "id:" + id + "\n" + regex + "\n" + "Timeout\n\n";
+        } catch (Exception e) {
+            result += "id:" + id + "\n" + regex + "\n" + e.toString();
+            e.printStackTrace();
         }
+
+        System.out.println(result);
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter("result.txt", true));
+            writer.write(result);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 关闭线程池
+        exec.shutdown();
+        return ;
     }
 
 }
