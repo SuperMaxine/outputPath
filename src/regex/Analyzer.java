@@ -250,7 +250,7 @@ public class Analyzer<comparePathLength> {
                                     //     System.out.println("abca");
                                     if (matchingStepCnt > 1e5) {
                                         attackable = true;
-                                        attackMsg = "OneCounting\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                                        attackMsg = "OneCounting\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                                         return;
                                     }
                                     // System.out.println("");
@@ -267,7 +267,7 @@ public class Analyzer<comparePathLength> {
                                         // System.out.println(matchingStepCnt);
                                         if (matchingStepCnt > 1e5) {
                                             attackable = true;
-                                            attackMsg = "OneCounting\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                                            attackMsg = "OneCounting\nprefix:"+pre+"\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                                             return;
                                         }
                                     }
@@ -534,12 +534,12 @@ public class Analyzer<comparePathLength> {
                 // if (pump.equals("aaa"))
                 //     System.out.println("aaa");
                 double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 10000, 10000000);
-                // System.out.println(matchingStepCnt);
+                System.out.println(matchingStepCnt);
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
                     attackable = true;
-                    attackMsg = "POA\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                    attackMsg = "POA\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                     return true;
                 }
                 // System.out.println("");
@@ -553,11 +553,11 @@ public class Analyzer<comparePathLength> {
                     String pump = pumpEnum.next();
                     // System.out.println(pre + pump);
                     double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 10000, 10000000);
-                    // System.out.println(matchingStepCnt);
+                    System.out.println(matchingStepCnt);
                     if (matchingStepCnt > 1e5){
                         // System.out.println("matchingStepCnt > 1e5");
                         attackable = true;
-                        attackMsg = "POA\nprefix: \n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                        attackMsg = "POA\nprefix:"+pre+"\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                         return true;
                     }
                 }

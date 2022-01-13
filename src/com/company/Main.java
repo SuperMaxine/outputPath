@@ -11,9 +11,30 @@ import java.util.concurrent.*;
 public class Main {
 
     public static void main(String[] args) {
+
+        testSingleRegex("@[\\w-]+[\\s\\S]*?(?:;|(?=\\s*\\{))");
+        // testDataSet("prism.txt");
+
+    }
+
+    private static void testSingleRegex(String regex) {
+        Pattern p = Pattern.compile(regex + "[\\s\\S]*");
+        System.out.println("flowchart TD");
+        Analyzer.printPatternStruct(p.root);
+        // log start time
+        long startTime = System.currentTimeMillis();
+        Analyzer a = new Analyzer(p, 10, regex);
+        // log end time and print run time
+        long endTime = System.currentTimeMillis();
+        System.out.println(a.attackable);
+        System.out.println(a.attackMsg);
+        System.out.println("Run time: " + (endTime - startTime) + "ms");
+    }
+
+    private static void testDataSet(String file){
         FileInputStream inputStream = null;
         try {
-            inputStream = new FileInputStream("prism.txt");
+            inputStream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -29,7 +50,7 @@ public class Main {
         }
 
         ExecutorService es;
-        int count = 0;
+        int count = 1;
         String str = null;
         while(true)
         {
@@ -48,8 +69,6 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     static class attackResult{
