@@ -29,13 +29,31 @@ public class Main {
         // testSingleRegex("<!\\[CDATA\\[[\\s\\S]*?]]>");
         // testSingleRegex("<\\/?(?!\\d)[^\\s>\\/=$<%]+(?:\\s(?:\\s*[^\\s>\\/=]+(?:\\s*=\\s*(?:\\\"[^\\\"]*\\\"|'[^']*'|[^\\s'\\\">=]+(?=[\\s>]))|(?=[\\s/>])))+)?\\s*\\/?>");
         // testSingleRegex("(\\[)[\\s\\S]+(?=\\]>$)");
-        testSingleRegex("\\=\\S*(?:\\\"[^\\\"]*\\\"|'[^']*'|[^\\s'\\\">=]+)");
+        // testSingleRegex("\\=\\S*(?:\\\"[^\\\"]*\\\"|'[^']*'|[^\\s'\\\">=]+)");
+        // testSingleRegex("[-_a-z\\xA0-\\uFFFF][-\\w\\xA0-\\uFFFF]*(?=\\s*:)");
+        // testSingleRegex("[-a-z0-9]+(?=\\()");
+        // testSingleRegex("(<style[\\s\\S]*?>)(?:<!\\[CDATA\\[(?:[^\\]]|\\](?!\\]>))*\\]\\]>|(?!<!\\[CDATA\\[)[\\s\\S])*?(?=<\\/style>)");
+        // testSingleRegex("<!\\[CDATA\\[[\\s\\S]*?\\]\\]>");
+        // testSingleRegex("\\s*style=(\\\"|')(?:\\\\[\\s\\S]|(?!\\1)[^\\\\])*\\1");
+        // testSingleRegex("\\w+(?=\\()");
+        // testSingleRegex("#?[_$a-zA-Z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*(?=\\s*(?:\\.\\s*(?:apply|bind|call)\\s*)?\\()");
+        // testSingleRegex("((?:^|[^$\\w\\xA0-\\uFFFF.\\\"'\\])\\s]|\\b(?:return|yield))\\s*)\\/(?:\\[(?:[^\\]\\\\\\r\\n]|\\\\.)*]|\\\\.|[^/\\\\\\[\\r\\n])+\\/[gimyus]{0,6}(?=(?:\\s|\\/\\*(?:[^*]|\\*(?!\\/))*\\*\\/)*(?:$|[\\r\\n,.;:})\\]]|\\/\\/))");
+        // testSingleRegex("#?[_$a-zA-Z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*(?=\\s*[=:]\\s*(?:async\\s*)?(?:\\bfunction\\b|(?:\\((?:[^()]|\\([^()]*\\))*\\)|[_$a-zA-Z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*)\\s*=>))");
+        // testSingleRegex("[a-z]+$");
+        // testSingleRegex("(function(?:\\s+[_$A-Za-z\\xA0-\\uFFFF][$\\w\\xA0-\\uFFFF]*)?\\s*\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+?(?=\\s*\\))");
+
+        // 引擎stackoverflow
+        // testSingleRegex("[^{}\\s](?:[^{};\\\"']|(\\\"|')(?:\\\\(?:\\r\\n|[\\s\\S])|(?!\\1)[^\\\\\\r\\n])*\\1)*?(?=\\s*\\{)");
 
         // 需要实现优化“某些后缀正则影响了中缀构造方式”
         // testSingleRegex("\\/\\*[\\s\\S]*?\\*\\/");
 
+        // 暂不明，可能是反向引用
+        // testSingleRegex("(\\\"|')(?:\\\\(?:\\r\\n|[\\s\\S])|(?!\\1)[^\\\\\\r\\n])*\\1");
+        // testSingleRegex("([\\\"'])(?:\\\\(?:\\r\\n|[\\s\\S])|(?!\\1)[^\\\\\\r\\n])*\\1");
 
-
+        // 不明原因
+        // testSingleRegex("`(?:\\\\[\\s\\S]|\\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}|(?!\\${)[^\\\\`])*`"); //Exception in thread "main" regex.PatternSyntaxException: Illegal repetition near index 14
 
         // testDataSet("prism.txt");
 
