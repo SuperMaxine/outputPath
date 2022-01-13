@@ -5946,8 +5946,12 @@ public final class Pattern4Search implements java.io.Serializable {
             return 0;
         String repeated = new String(new char[repeat_cnt]).replace("\0", pump);
         String attack_string = prefix + repeated + suffix;
+        System.out.println("x:" + prefix);
+        System.out.println("y:" + pump);
+        System.out.println("z:" + suffix);
         Matcher4Search m = matcher(attack_string, new Trace4Search(threshold, false));
         Trace4Search t = m.matches();
+        System.out.println("MatchSteps: " + t.getMatchSteps());
                 //m.find();
 //        System.out.println("t.getMatchSteps() = " + t.getMatchSteps());
         return t.getMatchSteps();
