@@ -948,6 +948,11 @@ public class Analyzer<comparePathLength> {
         // 2. 分支
         else if(root instanceof Pattern.Branch){
             if (((Pattern.Branch)root).getSize() == 1) {
+                // TODO：Ques作Branch的正确逻辑应该如下注释，先不改，等测试
+                /*
+                result.addAll(retrunPaths(((Pattern.Branch) root).conn, path, maxLength, endNode, type))
+                result.addAll(retrunPaths(((Pattern.Branch) root).atoms[0], path, maxLength, endNode, type))
+                 */
                 ArrayList<oldPath> tmpPath1 = new ArrayList<>();
                 tmpPath1.add(path);
                 tmpPath1.addAll(retrunPaths(((Pattern.Branch) root).atoms[0], path, maxLength, endNode, type));
@@ -956,6 +961,7 @@ public class Analyzer<comparePathLength> {
                     result.addAll(retrunPaths(root.next, p, maxLength, endNode, type));
                 }
             } else {
+                // TODO: 重写Branch，切断atoms结尾到conn的途径（遇到conn就return），像Loop一样通过conn构造nextPath再和branchPath组合
                 for (Pattern.Node node : ((Pattern.Branch) root).atoms) {
                     if (node == null) {
                         continue;
