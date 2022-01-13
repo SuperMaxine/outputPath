@@ -40,7 +40,7 @@ public class Analyzer<comparePathLength> {
         generateCharSet((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom);
         bigCharSetMap.put(((Pattern.Curly)p.root.next).atom, ((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom).charSet);
         fixedPrePaths = retrunPaths(p.root, new oldPath(), 3, p.root.next.next.next, returnPathsType.pump);
-        // TODO:关于压缩字符集，目前会在returnPaths中重复生成，考虑直接使用node.charSet，待优化
+        // Done:关于压缩字符集，目前会在returnPaths中重复生成，考虑直接使用node.charSet，待优化
         generateAllBigCharSet();
 
         // System.out.println("OneLoopNodes: " + OneLoopNodes.size());
@@ -950,18 +950,18 @@ public class Analyzer<comparePathLength> {
         // 2. 分支
         else if(root instanceof Pattern.Branch){
             if (((Pattern.Branch)root).getSize() == 1) {
-                // TODO：Ques作Branch的正确逻辑应该如下注释，先不改，等测试
-                /*
-                result.addAll(retrunPaths(((Pattern.Branch) root).conn, path, maxLength, endNode, type))
-                result.addAll(retrunPaths(((Pattern.Branch) root).atoms[0], path, maxLength, endNode, type))
-                 */
-                ArrayList<oldPath> tmpPath1 = new ArrayList<>();
-                tmpPath1.add(path);
-                tmpPath1.addAll(retrunPaths(((Pattern.Branch) root).atoms[0], path, maxLength, endNode, type));
-
-                for(oldPath p : tmpPath1){
-                    result.addAll(retrunPaths(root.next, p, maxLength, endNode, type));
-                }
+                // Done：Ques作Branch的正确逻辑应该如下注释，先不改，等测试
+                // /*
+                result.addAll(retrunPaths(((Pattern.Branch) root).conn, path, maxLength, endNode, type));
+                result.addAll(retrunPaths(((Pattern.Branch) root).atoms[0], path, maxLength, endNode, type));
+                 // */
+                // ArrayList<oldPath> tmpPath1 = new ArrayList<>();
+                // tmpPath1.add(path);
+                // tmpPath1.addAll(retrunPaths(((Pattern.Branch) root).atoms[0], path, maxLength, endNode, type));
+                //
+                // for(oldPath p : tmpPath1){
+                //     result.addAll(retrunPaths(root.next, p, maxLength, endNode, type));
+                // }
             } else {
                 // TODO: 重写Branch，切断atoms结尾到conn的途径（遇到conn就return），像Loop一样通过conn构造nextPath再和branchPath组合
                 for (Pattern.Node node : ((Pattern.Branch) root).atoms) {
