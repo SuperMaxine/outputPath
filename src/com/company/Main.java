@@ -12,7 +12,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        testSingleRegex("@[\\w-]+[\\s\\S]*?(?:;|(?=\\s*\\{))");
+        // testSingleRegex("<!--[\\s\\S]*?-->");
+        // testSingleRegex("<\\?[\\s\\S]+?\\?>");
+        // testSingleRegex("<!\\[CDATA\\[[\\s\\S]*?]]>");
+        testSingleRegex("(Symbian/3).+NokiaBrowser/7\\.3\t");
         // testDataSet("prism.txt");
 
     }
