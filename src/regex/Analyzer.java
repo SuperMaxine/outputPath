@@ -8,6 +8,7 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
+    private final redosPattern testPattern;
     public boolean attackable = false;
     public String attackMsg = "";
     Pattern pattern;
@@ -32,6 +33,7 @@ public class Analyzer<comparePathLength> {
         fixedPrePaths = new ArrayList<>();
         this.rawPattern = rawPattern;
         lookaround = false;
+        this.testPattern = redosPattern.compile(rawPattern);
 
         searchOneLoopNode(pattern.root, true);
 
@@ -254,7 +256,7 @@ public class Analyzer<comparePathLength> {
                         for (oldPath pumpPath : pumpPaths) {
                             Enumerator preEnum = new Enumerator(prePath);
                             Enumerator pumpEnum = new Enumerator(pumpPath);
-                            if (dynamicValidate(preEnum, pumpEnum)) return;
+                            if (dynamicValidate(preEnum, pumpEnum, "POA")) return;
                         }
                     }
                 } else if (type == 2) {
@@ -326,7 +328,7 @@ public class Analyzer<comparePathLength> {
                         for (oldPath pumpPath : pumpPaths) {
                             Enumerator preEnum = new Enumerator(prePath);
                             Enumerator pumpEnum = new Enumerator(pumpPath);
-                            if (dynamicValidate(preEnum, pumpEnum)) return;
+                            if (dynamicValidate(preEnum, pumpEnum, "POA")) return;
                         }
                     }
 
@@ -522,8 +524,13 @@ public class Analyzer<comparePathLength> {
         }
     }
 
-    private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum){
-        redosPattern testPattern = redosPattern.compile(rawPattern);
+    private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum, String type){
+        int max_length = 500;
+        if ("POA".equals(type)) {
+            max_length = 10000;
+        } else if ("SLQ".equals(type)) {
+            max_length = 1000000;
+        }
         if (preEnum.Empty()) {
             while (pumpEnum.hasNext()) {
                 String pump = pumpEnum.next();
@@ -536,7 +543,7 @@ public class Analyzer<comparePathLength> {
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
                     attackable = true;
-                    attackMsg = "POA\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                    attackMsg = type + "\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                     return true;
                 }
                 // System.out.println("");
@@ -554,7 +561,7 @@ public class Analyzer<comparePathLength> {
                     if (matchingStepCnt > 1e5){
                         // System.out.println("matchingStepCnt > 1e5");
                         attackable = true;
-                        attackMsg = "POA\nprefix:"+pre+"\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                        attackMsg = type +"\nprefix:"+pre+"\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                         return true;
                     }
                 }
