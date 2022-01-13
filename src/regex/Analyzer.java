@@ -21,132 +21,6 @@ public class Analyzer<comparePathLength> {
     private String rawPattern;
     private boolean lookaround;
 
-    public static void printPatternStruct(Pattern.Node root){
-        if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
-            return;
-        }
-        System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_"));
-
-        // 需要特殊处理的节点（下一个节点不在next或者不止在next）
-        if (root instanceof Pattern.Prolog) {
-            printPatternStruct(((Pattern.Prolog)root).loop);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--loop-->" + ((Pattern.Prolog)root).loop.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        } else if (root instanceof Pattern.Loop) {
-            printPatternStruct(((Pattern.Loop)root).body);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--body-->" + ((Pattern.Loop)root).body.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.Loop)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        } else if (root instanceof Pattern.Curly) {
-            printPatternStruct(((Pattern.Curly)root).atom);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atom-->" + ((Pattern.Curly)root).atom.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.Curly)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        } else if (root instanceof Pattern.GroupCurly) {
-            printPatternStruct(((Pattern.GroupCurly)root).atom);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atom-->" + ((Pattern.GroupCurly)root).atom.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.GroupCurly)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }
-
-        // 2. 分支
-        else if(root instanceof Pattern.Branch){
-            for(Pattern.Node node : ((Pattern.Branch)root).atoms){
-                if (node == null){
-                    continue;
-                }
-                System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atoms-->" + node.toString().replace("regex.Pattern$", "").replace("@", "_"));
-                printPatternStruct(node);
-            }
-        } else if(root instanceof Pattern.Ques){
-            printPatternStruct(((Pattern.Ques)root).atom);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atom-->" + ((Pattern.Ques)root).atom.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.Ques)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }
-
-        // 具有实际字符意义
-        else if (root instanceof Pattern.CharProperty){
-            // if(((Pattern.CharProperty) root).charSet.size() == 0){
-            //     // generateCharSet((Pattern.CharProperty) root);
-            //     printPatternStruct((Pattern.CharProperty) root);
-            // }
-            // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
-            // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
-            printPatternStruct(root.next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }
-
-        else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
-            // for (int i : ((Pattern.SliceNode) root).buffer){
-            //     // Set<Integer> tmpCharSet = new HashSet<>();
-            //     fullSmallCharSet.add(i);
-            //     // path.path.add(tmpCharSet);
-            // }
-            // // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
-            printPatternStruct(root.next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }
-
-        // lookaround处理
-        else if (root instanceof Pattern.Pos){
-            printPatternStruct(((Pattern.Pos)root).cond);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--cond-->" + ((Pattern.Pos)root).cond.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.Pos)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }else if (root instanceof Pattern.Neg){
-            printPatternStruct(((Pattern.Neg)root).cond);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--cond-->" + ((Pattern.Neg)root).cond.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.Neg)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }else if (root instanceof Pattern.Behind){
-            printPatternStruct(((Pattern.Behind)root).cond);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--cond-->" + ((Pattern.Behind)root).cond.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            printPatternStruct(((Pattern.Behind)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }else if (root instanceof Pattern.NotBehind){
-            printPatternStruct(((Pattern.NotBehind)root).cond);
-            printPatternStruct(((Pattern.NotBehind)root).next);
-            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-        }
-
-        else {
-            printPatternStruct(root.next);
-            if (root.next != null) {
-                System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
-            }
-        }
-
-    }
-
-    enum returnPathsType{
-        pump,
-        pre
-    }
-
-    boolean getPathOverlap(oldPath path1, oldPath path2, oldPath result){
-        // 如果两个路径的长度不同，则不可能有重叠
-        if (path1.path.size() != path2.path.size()) {
-            return false;
-        }
-        else {
-            // 如果两个路径的长度相同，则需要比较每一个节点的字符集
-            ArrayList<Set<Integer>> charSet1 = new ArrayList<>();
-            for (int i = 0 ; i < path1.path.size(); i++){
-                Set<Integer> tmpCharSet = new HashSet<>();
-                tmpCharSet.addAll(path1.path.get(i));
-                tmpCharSet.retainAll(path2.path.get(i));
-                if (tmpCharSet.size() == 0){
-                    return false;
-                }
-                else {
-                    charSet1.add(tmpCharSet);
-                }
-            }
-            result.path = charSet1;
-            return true;
-        }
-    }
-
     public Analyzer(Pattern pattern, int maxLength, String rawPattern){
         OneLoopNodes = new ArrayList<>();
         this.pattern = pattern;
@@ -413,7 +287,7 @@ public class Analyzer<comparePathLength> {
                             // 两个路径集合中的路径两两配对，求重叠路径
                             oldPath pumpPath = new oldPath();
                             if (getPathOverlap(frontPaths.get(k), tailPaths.get(l), pumpPath)) {
-                                    pumpPaths.add(pumpPath);
+                                pumpPaths.add(pumpPath);
                             }
                         }
                     }
@@ -524,50 +398,6 @@ public class Analyzer<comparePathLength> {
 
         // System.out.println("[*] Analyzer done");
     }
-    
-    private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum){
-        redosPattern testPattern = redosPattern.compile(rawPattern);
-        if (preEnum.Empty()) {
-            while (pumpEnum.hasNext()) {
-                String pump = pumpEnum.next();
-                // System.out.println(pump);
-                // if (pump.equals("aaa"))
-                //     System.out.println("aaa");
-                double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 10000, 10000000);
-                System.out.println(matchingStepCnt);
-                // if (pump.equals("abca"))
-                //     System.out.println("abca");
-                if (matchingStepCnt > 1e5) {
-                    attackable = true;
-                    attackMsg = "POA\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
-                    return true;
-                }
-                // System.out.println("");
-            }
-        }
-        else {
-            while (preEnum.hasNext()) {
-                String pre = preEnum.next();
-                while (pumpEnum.hasNext()) {
-                    // System.out.println("brfore next");
-                    String pump = pumpEnum.next();
-                    // System.out.println(pre + pump);
-                    double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 10000, 10000000);
-                    System.out.println(matchingStepCnt);
-                    if (matchingStepCnt > 1e5){
-                        // System.out.println("matchingStepCnt > 1e5");
-                        attackable = true;
-                        attackMsg = "POA\nprefix:"+pre+"\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-
-
 
     // record用来排除lookaround中的counting
     public void searchOneLoopNode(Pattern.Node root, boolean record){
@@ -664,6 +494,195 @@ public class Analyzer<comparePathLength> {
             searchOneLoopNode(root.next, record);
         }
 
+    }
+
+    boolean getPathOverlap(oldPath path1, oldPath path2, oldPath result){
+        // 如果两个路径的长度不同，则不可能有重叠
+        if (path1.path.size() != path2.path.size()) {
+            return false;
+        }
+        else {
+            // 如果两个路径的长度相同，则需要比较每一个节点的字符集
+            ArrayList<Set<Integer>> charSet1 = new ArrayList<>();
+            for (int i = 0 ; i < path1.path.size(); i++){
+                Set<Integer> tmpCharSet = new HashSet<>();
+                tmpCharSet.addAll(path1.path.get(i));
+                tmpCharSet.retainAll(path2.path.get(i));
+                if (tmpCharSet.size() == 0){
+                    return false;
+                }
+                else {
+                    charSet1.add(tmpCharSet);
+                }
+            }
+            result.path = charSet1;
+            return true;
+        }
+    }
+
+    private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum){
+        redosPattern testPattern = redosPattern.compile(rawPattern);
+        if (preEnum.Empty()) {
+            while (pumpEnum.hasNext()) {
+                String pump = pumpEnum.next();
+                // System.out.println(pump);
+                // if (pump.equals("aaa"))
+                //     System.out.println("aaa");
+                double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 10000, 10000000);
+                System.out.println(matchingStepCnt);
+                // if (pump.equals("abca"))
+                //     System.out.println("abca");
+                if (matchingStepCnt > 1e5) {
+                    attackable = true;
+                    attackMsg = "POA\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                    return true;
+                }
+                // System.out.println("");
+            }
+        }
+        else {
+            while (preEnum.hasNext()) {
+                String pre = preEnum.next();
+                while (pumpEnum.hasNext()) {
+                    // System.out.println("brfore next");
+                    String pump = pumpEnum.next();
+                    // System.out.println(pre + pump);
+                    double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 10000, 10000000);
+                    System.out.println(matchingStepCnt);
+                    if (matchingStepCnt > 1e5){
+                        // System.out.println("matchingStepCnt > 1e5");
+                        attackable = true;
+                        attackMsg = "POA\nprefix:"+pre+"\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static void printPatternStruct(Pattern.Node root){
+        if (root == null || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
+            return;
+        }
+        System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_"));
+
+        // 需要特殊处理的节点（下一个节点不在next或者不止在next）
+        if (root instanceof Pattern.Prolog) {
+            printPatternStruct(((Pattern.Prolog)root).loop);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--loop-->" + ((Pattern.Prolog)root).loop.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        } else if (root instanceof Pattern.Loop) {
+            printPatternStruct(((Pattern.Loop)root).body);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--body-->" + ((Pattern.Loop)root).body.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.Loop)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        } else if (root instanceof Pattern.Curly) {
+            printPatternStruct(((Pattern.Curly)root).atom);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atom-->" + ((Pattern.Curly)root).atom.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.Curly)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        } else if (root instanceof Pattern.GroupCurly) {
+            printPatternStruct(((Pattern.GroupCurly)root).atom);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atom-->" + ((Pattern.GroupCurly)root).atom.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.GroupCurly)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }
+
+        // 2. 分支
+        else if(root instanceof Pattern.Branch){
+            for(Pattern.Node node : ((Pattern.Branch)root).atoms){
+                if (node == null){
+                    continue;
+                }
+                System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atoms-->" + node.toString().replace("regex.Pattern$", "").replace("@", "_"));
+                printPatternStruct(node);
+            }
+        } else if(root instanceof Pattern.Ques){
+            printPatternStruct(((Pattern.Ques)root).atom);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--atom-->" + ((Pattern.Ques)root).atom.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.Ques)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }
+
+        // 具有实际字符意义
+        else if (root instanceof Pattern.CharProperty){
+            // if(((Pattern.CharProperty) root).charSet.size() == 0){
+            //     // generateCharSet((Pattern.CharProperty) root);
+            //     printPatternStruct((Pattern.CharProperty) root);
+            // }
+            // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
+            // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+            printPatternStruct(root.next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }
+
+        else if (root instanceof Pattern.SliceNode || root instanceof Pattern.BnM){
+            // for (int i : ((Pattern.SliceNode) root).buffer){
+            //     // Set<Integer> tmpCharSet = new HashSet<>();
+            //     fullSmallCharSet.add(i);
+            //     // path.path.add(tmpCharSet);
+            // }
+            // // result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
+            printPatternStruct(root.next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }
+
+        // lookaround处理
+        else if (root instanceof Pattern.Pos){
+            printPatternStruct(((Pattern.Pos)root).cond);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--cond-->" + ((Pattern.Pos)root).cond.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.Pos)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }else if (root instanceof Pattern.Neg){
+            printPatternStruct(((Pattern.Neg)root).cond);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--cond-->" + ((Pattern.Neg)root).cond.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.Neg)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }else if (root instanceof Pattern.Behind){
+            printPatternStruct(((Pattern.Behind)root).cond);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--cond-->" + ((Pattern.Behind)root).cond.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            printPatternStruct(((Pattern.Behind)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }else if (root instanceof Pattern.NotBehind){
+            printPatternStruct(((Pattern.NotBehind)root).cond);
+            printPatternStruct(((Pattern.NotBehind)root).next);
+            System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+        }
+
+        else {
+            printPatternStruct(root.next);
+            if (root.next != null) {
+                System.out.println(root.toString().replace("regex.Pattern$", "").replace("@", "_") + "--next-->" + root.next.toString().replace("regex.Pattern$", "").replace("@", "_"));
+            }
+        }
+
+    }
+
+    public static class oldPath {
+        public boolean reachEnd;
+        public ArrayList<Set<Integer>> path;
+        public ArrayList<Set<Integer>> negPath; // negPath长于path是可以的,实际上最末尾的negPath并没有生效，直接扣会导致扣多，但结果至少是正确的
+        public ArrayList<Set<Integer>> posPath; // posPath必须短于或等于path，因为如果长于path则不满足最末尾的posPath，导致不能被匹配
+
+        public oldPath() {
+            this.reachEnd = false;
+            this.path = new ArrayList<>();
+            this.negPath = new ArrayList<>();
+            this.posPath = new ArrayList<>();
+        }
+        public oldPath(oldPath p) {
+            this.reachEnd = p.reachEnd;
+            this.path = new ArrayList<>(p.path);
+            this.negPath = new ArrayList<>(p.negPath);
+            this.posPath = new ArrayList<>(p.posPath);
+        }
+
+    }
+
+    enum returnPathsType{
+        pump,
+        pre
     }
 
     public ArrayList<oldPath> retrunPaths(Pattern.Node root, oldPath rawPath, int maxLength, Pattern.Node endNode, returnPathsType type){
@@ -1101,26 +1120,6 @@ public class Analyzer<comparePathLength> {
         return result;
     }
 
-    public static class oldPath {
-        public boolean reachEnd;
-        public ArrayList<Set<Integer>> path;
-        public ArrayList<Set<Integer>> negPath; // negPath长于path是可以的,实际上最末尾的negPath并没有生效，直接扣会导致扣多，但结果至少是正确的
-        public ArrayList<Set<Integer>> posPath; // posPath必须短于或等于path，因为如果长于path则不满足最末尾的posPath，导致不能被匹配
-
-        public oldPath() {
-            this.reachEnd = false;
-            this.path = new ArrayList<>();
-            this.negPath = new ArrayList<>();
-            this.posPath = new ArrayList<>();
-        }
-        public oldPath(oldPath p) {
-            this.reachEnd = p.reachEnd;
-            this.path = new ArrayList<>(p.path);
-            this.negPath = new ArrayList<>(p.negPath);
-            this.posPath = new ArrayList<>(p.posPath);
-        }
-
-    }
 
 
     private static void oldGenerateCharSet(Pattern.CharProperty root) {
@@ -1131,7 +1130,6 @@ public class Analyzer<comparePathLength> {
             }
         }
     }
-
 
     private static void generateCharSet(Pattern.CharProperty root){
         // 默认的处理方法
@@ -1282,7 +1280,6 @@ public class Analyzer<comparePathLength> {
         root.charSet.addAll(result);
     }
 
-
     private void generateFullSmallCharSet(Pattern.CharProperty root){
         Set<Integer> charSet = new HashSet<>();
         for(int i = 0; i < 65536; i++){
@@ -1297,6 +1294,8 @@ public class Analyzer<comparePathLength> {
             bigCharSetMap.put(root, charSet);
         }
     }
+
+
 
     public static Comparator<oldPath> comparePathLength = new Comparator<oldPath>() {
         @Override
@@ -1319,6 +1318,14 @@ public class Analyzer<comparePathLength> {
         return set1.containsAll(set2);
     }
 
+
+
+    private static final Pattern DotP = Pattern.compile(".");
+    private static final Pattern BoundP = Pattern.compile("\\b");
+    private static final Pattern SpaceP = Pattern.compile("\\s");
+    private static final Pattern noneSpaceP = Pattern.compile("\\S");
+    private static final Pattern wordP = Pattern.compile("\\w");
+
     private static Set<Integer> getNodeCharSet(Pattern.Node node){
         if(node instanceof Pattern.CharProperty){
             if(((Pattern.CharProperty) node).charSet.size()==0) {
@@ -1337,12 +1344,6 @@ public class Analyzer<comparePathLength> {
             return null;
         }
     }
-
-    private static final Pattern DotP = Pattern.compile(".");
-    private static final Pattern BoundP = Pattern.compile("\\b");
-    private static final Pattern SpaceP = Pattern.compile("\\s");
-    private static final Pattern noneSpaceP = Pattern.compile("\\S");
-    private static final Pattern wordP = Pattern.compile("\\w");
 
     public static void printPaths(ArrayList<oldPath> paths){
         /**
