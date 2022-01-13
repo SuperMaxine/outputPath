@@ -35,6 +35,14 @@ public class Analyzer<comparePathLength> {
 
         searchOneLoopNode(pattern.root, true);
 
+        String regex = ".{0,3}";
+        Pattern p = Pattern.compile(regex);
+        generateCharSet((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom);
+        bigCharSetMap.put(((Pattern.Curly)p.root.next).atom, ((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom).charSet);
+        fixedPrePaths = retrunPaths(p.root, new oldPath(), 3, p.root.next.next.next, returnPathsType.pump);
+        // TODO:关于压缩字符集，目前会在returnPaths中重复生成，考虑直接使用node.charSet，待优化
+        generateAllBigCharSet();
+
         // System.out.println("OneLoopNodes: " + OneLoopNodes.size());
 
         // 获取每一个生成每一个Loop相关的数据，并进行OneLoop类型处理
@@ -50,12 +58,6 @@ public class Analyzer<comparePathLength> {
             // printPaths(OneLoopPrePaths.get(node));
         }
 
-        String regex = ".{0,3}";
-        Pattern p = Pattern.compile(regex);
-        fixedPrePaths = retrunPaths(p.root, new oldPath(), 3, p.root.next.next.next, returnPathsType.pump);
-        generateCharSet((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom);
-        bigCharSetMap.put(((Pattern.Curly)p.root.next).atom, ((Pattern.CharProperty) ((Pattern.Curly)p.root.next).atom).charSet);
-        generateAllBigCharSet();
 
         // 单个Counting
         for (Pattern.Node node : OneLoopNodes) {
@@ -987,11 +989,12 @@ public class Analyzer<comparePathLength> {
 
         // 具有实际字符意义
         else if (root instanceof Pattern.CharProperty){
-            if(((Pattern.CharProperty) root).charSet.size() == 0){
-                // oldGenerateCharSet((Pattern.CharProperty) root);
-                generateCharSet((Pattern.CharProperty) root);
-            }
-            path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
+            // if(((Pattern.CharProperty) root).charSet.size() == 0){
+            //     // oldGenerateCharSet((Pattern.CharProperty) root);
+            //     generateCharSet((Pattern.CharProperty) root);
+            // }
+            // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
+            path.path.add(((Pattern.CharProperty) root).charSet);
             result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
         }
 
