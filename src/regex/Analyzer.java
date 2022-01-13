@@ -10,6 +10,7 @@ import java.util.*;
  */
 public class Analyzer<comparePathLength> {
     private final Pattern4Search testPattern;
+    private final redosPattern testPattern4Search;
     public boolean attackable = false;
     public String attackMsg = "";
     Pattern pattern;
@@ -35,6 +36,7 @@ public class Analyzer<comparePathLength> {
         this.rawPattern = rawPattern;
         lookaround = false;
         this.testPattern = Pattern4Search.compile(rawPattern);
+        this.testPattern4Search = redosPattern.compile(rawPattern);
 
         searchOneLoopNode(pattern.root, true);
 
@@ -211,7 +213,8 @@ public class Analyzer<comparePathLength> {
 
                 if (type == 0) {
                     continue;
-                } else if (type == 1) {
+                }
+                else if (type == 1) {
                     // 两者直接相邻
                     // 获取中缀集合
                     ArrayList<oldPath> pumpPaths = new ArrayList<>();
@@ -260,7 +263,8 @@ public class Analyzer<comparePathLength> {
                             if (dynamicValidate(preEnum, pumpEnum, "POA")) return;
                         }
                     }
-                } else if (type == 2) {
+                }
+                else if (type == 2) {
                     // \w+0\d+
                     // 从midPaths中去除reachEnd为false的元素
                     Iterator iterator = midPaths.iterator();
@@ -398,43 +402,45 @@ public class Analyzer<comparePathLength> {
         }
 
 
-        // // SQL1
-        // // 获取所有root到counting的路径
-        // getAllCountingAtBegin(pattern.root, 0);
-        // for (Pattern.Node node : allCountingAtBegin){
-        //     // 因为前缀必定可空，所以不必考虑前缀
-        //     // 排序中缀
-        //     Collections.sort(OneLoopPumpPaths.get(node), new Comparator<oldPath>() {
-        //         @Override
-        //         public int compare(oldPath o1, oldPath o2) {
-        //             return o1.path.size() - o2.path.size();
-        //         }
-        //     });
-        //     for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-        //         Enumerator preEnum = new Enumerator(new oldPath());
-        //         Enumerator pumpEnum = new Enumerator(pumpPath);
-        //         if(dynamicValidate(preEnum, pumpEnum, "SLQ")) return;
-        //     }
-        // }
-        //
-        // //SLQ2
-        // for (Pattern.Node node : OneLoopNodes) {
-        //     for (oldPath prePath : OneLoopPrePaths.get(node)) {
-        //         for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
-        //             ArrayList<oldPath> overlapPaths = new ArrayList<>();
-        //             if (getPathOverlaps(pumpPath, prePath, overlapPaths)) {
-        //                 for (oldPath overlapPath : overlapPaths) {
-        //                     Enumerator preEnum = new Enumerator(new oldPath());
-        //                     Enumerator pumpEnum = new Enumerator(overlapPath);
-        //                     // Enumerator pumpEnum = new Enumerator(pumpPath);
-        //                     if (dynamicValidate(preEnum, pumpEnum, "SLQ")) return;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // // System.out.println("[*] Analyzer done");
+        // SLQ1
+        System.out.println("SLQ1");
+        // 获取所有root到counting的路径
+        getAllCountingAtBegin(pattern.root, 0);
+        for (Pattern.Node node : allCountingAtBegin){
+            // 因为前缀必定可空，所以不必考虑前缀
+            // 排序中缀
+            Collections.sort(OneLoopPumpPaths.get(node), new Comparator<oldPath>() {
+                @Override
+                public int compare(oldPath o1, oldPath o2) {
+                    return o1.path.size() - o2.path.size();
+                }
+            });
+            for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+                Enumerator preEnum = new Enumerator(new oldPath());
+                Enumerator pumpEnum = new Enumerator(pumpPath);
+                if(dynamicValidate(preEnum, pumpEnum, "SLQ")) return;
+            }
+        }
+
+        //SLQ2
+        System.out.println("SLQ2");
+        for (Pattern.Node node : OneLoopNodes) {
+            for (oldPath prePath : OneLoopPrePaths.get(node)) {
+                for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
+                    ArrayList<oldPath> overlapPaths = new ArrayList<>();
+                    if (getPathOverlaps(pumpPath, prePath, overlapPaths)) {
+                        for (oldPath overlapPath : overlapPaths) {
+                            Enumerator preEnum = new Enumerator(new oldPath());
+                            Enumerator pumpEnum = new Enumerator(overlapPath);
+                            // Enumerator pumpEnum = new Enumerator(pumpPath);
+                            if (dynamicValidate(preEnum, pumpEnum, "SLQ")) return;
+                        }
+                    }
+                }
+            }
+        }
+
+        // System.out.println("[*] Analyzer done");
     }
 
     // record用来排除lookaround中的counting
@@ -601,8 +607,10 @@ public class Analyzer<comparePathLength> {
                 // System.out.println(pump);
                 // if (pump.equals("aaa"))
                 //     System.out.println("aaa");
-                double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
-                System.out.println(matchingStepCnt);
+                double matchingStepCnt;
+                if ("SLQ".equals(type)) matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
+                else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
+                // System.out.println(matchingStepCnt);
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
@@ -620,8 +628,10 @@ public class Analyzer<comparePathLength> {
                     // System.out.println("brfore next");
                     String pump = pumpEnum.next();
                     // System.out.println(pre + pump);
-                    double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", max_length, 10000000);
-                    System.out.println(matchingStepCnt);
+                    double matchingStepCnt;
+                    if ("SLQ".equals(type)) matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
+                    else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
+                    // System.out.println(matchingStepCnt);
                     if (matchingStepCnt > 1e5){
                         // System.out.println("matchingStepCnt > 1e5");
                         attackable = true;

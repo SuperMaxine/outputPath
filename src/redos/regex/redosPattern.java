@@ -6107,13 +6107,9 @@ public final class redosPattern implements java.io.Serializable {
     }
 
     public double getMatchingStepCnt(String prefix, String pump, String suffix, int max_length, double threshold) {
-        // int repeat_cnt = (max_length - prefix.length() - suffix.length()) / pump.length();
-        // if (repeat_cnt < 1) {
-        //     return 0;
-        // }
         String repeated = new String(new char[max_length]).replace("\0", pump);
-        // String attack_string = prefix + repeated + suffix;
         String attack_string = prefix + repeated + "\n\b\n";
+
         // System.out.println("attack_string: " + attack_string);
         // System.out.println("attack_string length:" + attack_string.length());
 
@@ -6122,12 +6118,15 @@ public final class redosPattern implements java.io.Serializable {
         // System.out.println("y:" + stringToAscii(pump) + "*" + max_length);
         // System.out.println("z:" + stringToAscii(suffix));
 
+        // System.out.println("x:" + prefix);
+        // System.out.println("y:" + pump);
+        // System.out.println("z:" + suffix);
+
         reodsMatcher m = matcher(attack_string, new Trace(threshold, false));
         Trace t = m.find();
-        System.out.println("x:" + prefix);
-        System.out.println("y:" + pump);
-        System.out.println("z:" + suffix);
-        System.out.println("MatchSteps: " + t.getMatchSteps());
+
+        // System.out.println("MatchSteps: " + t.getMatchSteps());
+
         return t.getMatchSteps();
     }
 

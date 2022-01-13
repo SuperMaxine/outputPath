@@ -5941,19 +5941,23 @@ public final class Pattern4Search implements java.io.Serializable {
     }
 
     public int getMatchingStepCnt(String prefix, String pump, String suffix, int max_length, int threshold) {   // 修改
-        int repeat_cnt = (max_length - prefix.length() - suffix.length()) / pump.length();
-        if (repeat_cnt < 1)
-            return 0;
-        String repeated = new String(new char[repeat_cnt]).replace("\0", pump);
+        String repeated = new String(new char[max_length]).replace("\0", pump);
         String attack_string = prefix + repeated + suffix;
-        System.out.println("x:" + prefix);
-        System.out.println("y:" + pump);
-        System.out.println("z:" + suffix);
+
+        // System.out.println("attack_string: " );
+        // System.out.println("x:" + stringToAscii(prefix));
+        // System.out.println("y:" + stringToAscii(pump) + "*" + max_length);
+        // System.out.println("z:" + stringToAscii(suffix));
+
+        // System.out.println("x:" + prefix);
+        // System.out.println("y:" + pump);
+        // System.out.println("z:" + suffix);
+
         Matcher4Search m = matcher(attack_string, new Trace4Search(threshold, false));
         Trace4Search t = m.matches();
-        System.out.println("MatchSteps: " + t.getMatchSteps());
-                //m.find();
-//        System.out.println("t.getMatchSteps() = " + t.getMatchSteps());
+
+        // System.out.println("MatchSteps: " + t.getMatchSteps());
+
         return t.getMatchSteps();
     }
 
