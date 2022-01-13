@@ -35,11 +35,11 @@ public class Main {
         {
             try {
                 if (!((str = bufferedReader.readLine()) != null)) break;
+                regexAnalyzeLimitTime(str, count);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             count ++ ;
-            regexAnalyzeLimitTime(str, count);
         }
 
         //close
