@@ -5946,17 +5946,17 @@ public final class Pattern4Search implements java.io.Serializable {
 
         // System.out.println("attack_string: " );
         // System.out.println("x:" + stringToAscii(prefix));
-        System.out.println("y:" + stringToAscii(pump));
+        // System.out.println("y:" + stringToAscii(pump));
         // System.out.println("z:" + stringToAscii(suffix));
 
         // System.out.println("x:" + prefix);
-        System.out.println("y:" + pump);
+        // System.out.println("y:" + pump);
         // System.out.println("z:" + suffix);
 
         Matcher4Search m = matcher(attack_string, new Trace4Search(threshold, false));
         Trace4Search t = m.matches();
 
-        System.out.println("MatchSteps: " + t.getMatchSteps());
+        // System.out.println("MatchSteps: " + t.getMatchSteps());
 
         return t.getMatchSteps();
     }

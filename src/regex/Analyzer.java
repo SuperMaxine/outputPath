@@ -9,9 +9,9 @@ import java.util.*;
  * @author SuperMaxine
  */
 public class Analyzer<comparePathLength> {
-    private final boolean OneCounting = true;
+    private final boolean OneCounting = false;
     private final boolean POA = false;
-    private final boolean SLQ = false;
+    private final boolean SLQ = true;
     private final Pattern4Search testPattern;
     private final redosPattern testPattern4Search;
     public boolean attackable = false;
@@ -102,10 +102,10 @@ public class Analyzer<comparePathLength> {
                     }
                 });
 
-                System.out.println("--------------------Pre--------------------");
-                printPaths(newPrePaths);
-                System.out.println("--------------------Pump--------------------");
-                printPaths(OneLoopPumpPaths.get(node));
+                // System.out.println("--------------------Pre--------------------");
+                // printPaths(newPrePaths);
+                // System.out.println("--------------------Pump--------------------");
+                // printPaths(OneLoopPumpPaths.get(node));
 
                 for (oldPath prePath : newPrePaths) {
                     // for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
@@ -1049,8 +1049,8 @@ public class Analyzer<comparePathLength> {
             ArrayList<oldPath> thisCyclePath = new ArrayList<>();
             thisCyclePath.addAll(retrunPaths(((Pattern.Loop) root).body, new oldPath(), limit, endNode, type));
 
-            System.out.println("in Lazy Loop");
-            printPaths(thisCyclePath);
+            // System.out.println("in Lazy Loop");
+            // printPaths(thisCyclePath);
 
             // printPaths(thisCyclePath);
             // System.out.println("-----------------------");
@@ -1121,8 +1121,8 @@ public class Analyzer<comparePathLength> {
                     result.add(p);
                 }
             }
-            System.out.println("in Lazy Loop");
-            printPaths(result);
+            // System.out.println("in Lazy Loop");
+            // printPaths(result);
         }
         else if (root instanceof Pattern.Curly) {
             int limit = maxLength;
