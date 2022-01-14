@@ -6115,7 +6115,7 @@ public final class redosPattern implements java.io.Serializable {
 
         // System.out.println("attack_string: " );
         // System.out.println("x:" + stringToAscii(prefix));
-        // System.out.println("y:" + stringToAscii(pump) + "*" + max_length);
+        // System.out.println("y:" + stringToAscii(pump));
         // System.out.println("z:" + stringToAscii(suffix));
 
         // System.out.println("x:" + prefix);
