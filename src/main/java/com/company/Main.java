@@ -166,7 +166,7 @@ public class Main {
         // testSingleRegex("^([a-z][a-z0-9.+-]*:)?(\\/\\/)?([\\\\/]+)?([\\S\\s]*)");
 
 
-        testSingleRegex("^\\s+|\\s+$\n");
+        testSingleRegex("(a+|b)+");
         // testDataSet("prism.txt");
     }
 
