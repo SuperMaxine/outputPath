@@ -127,7 +127,10 @@ public class Analyzer<comparePathLength> {
                     for (int i = 0; i < OneLoopPumpPaths.get(node).size(); i++) {
                         oldPath pumpPath = new oldPath();
                         for (int j = i + 1; j < OneLoopPumpPaths.get(node).size(); j++) {
-                            if (Thread.currentThread().isInterrupted()) return;
+                            if(Thread.currentThread().isInterrupted()){
+                                System.out.println("线程请求中断...");
+                                return;
+                            }
                             if (getPathTotalOverlap(OneLoopPumpPaths.get(node).get(i), OneLoopPumpPaths.get(node).get(j), pumpPath)) {
                                 Enumerator preEnum = new Enumerator(prePath);
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
@@ -199,6 +202,10 @@ public class Analyzer<comparePathLength> {
         if (POA) {
             for (int i = 0; i < OneLoopNodes.size(); i++) {
                 for (int j = i + 1; j < OneLoopNodes.size(); j++) {
+                    if(Thread.currentThread().isInterrupted()){
+                        System.out.println("线程请求中断...");
+                        return;
+                    }
                     // 判断嵌套、直接相邻，以及夹着内容相邻
                     int type = 0; // 0为嵌套等不需要考虑的情况，1为两者直接相邻，2为两者夹着东西
                     Pattern.Node frontNode = null, backNode = null;
@@ -251,6 +258,10 @@ public class Analyzer<comparePathLength> {
                         ArrayList<oldPath> pumpPaths = new ArrayList<>();
                         for (int k = 0; k < OneLoopPumpPaths.get(OneLoopNodes.get(i)).size(); k++) {
                             for (int l = 0; l < OneLoopPumpPaths.get(OneLoopNodes.get(j)).size(); l++) {
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 // 两个路径集合中的路径两两配对，求重叠路径
                                 oldPath pumpPath = new oldPath();
                                 if (getPathTotalOverlap(OneLoopPumpPaths.get(OneLoopNodes.get(i)).get(k), OneLoopPumpPaths.get(OneLoopNodes.get(j)).get(l), pumpPath)) {
@@ -264,6 +275,10 @@ public class Analyzer<comparePathLength> {
                         for (oldPath rawPrePath : OneLoopPrePaths.get(frontNode)) {
                             for (oldPath pumpPath : pumpPaths) {
                                 for (oldPath fixedPrePath : fixedPrePaths) {
+                                    if(Thread.currentThread().isInterrupted()){
+                                        System.out.println("线程请求中断...");
+                                        return;
+                                    }
                                     oldPath newPrePath = new oldPath();
                                     newPrePath.path.addAll(fixedPrePath.path);
                                     newPrePath.path.addAll(rawPrePath.path);
@@ -289,7 +304,10 @@ public class Analyzer<comparePathLength> {
 
                         for (oldPath prePath : newPrePaths) {
                             for (oldPath pumpPath : pumpPaths) {
-                                if (Thread.currentThread().isInterrupted()) return;
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 Enumerator preEnum = new Enumerator(prePath);
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
                                 if (dynamicValidate(preEnum, pumpEnum, "POA")) return;
@@ -313,6 +331,10 @@ public class Analyzer<comparePathLength> {
                         ArrayList<oldPath> tailPaths = new ArrayList<oldPath>();
                         for (oldPath midp : midPaths) {
                             for (oldPath backp : backPaths) {
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 oldPath tmpPath = new oldPath();
                                 tmpPath.path.addAll(midp.path);
                                 tmpPath.path.addAll(backp.path);
@@ -324,6 +346,10 @@ public class Analyzer<comparePathLength> {
 
                         for (int k = 0; k < frontPaths.size(); k++) {
                             for (int l = 0; l < tailPaths.size(); l++) {
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 // 两个路径集合中的路径两两配对，求重叠路径
                                 oldPath pumpPath = new oldPath();
                                 if (getPathTotalOverlap(frontPaths.get(k), tailPaths.get(l), pumpPath)) {
@@ -337,6 +363,10 @@ public class Analyzer<comparePathLength> {
                         for (oldPath rawPrePath : OneLoopPrePaths.get(frontNode)) {
                             for (oldPath pumpPath : pumpPaths) {
                                 for (oldPath fixedPrePath : fixedPrePaths) {
+                                    if(Thread.currentThread().isInterrupted()){
+                                        System.out.println("线程请求中断...");
+                                        return;
+                                    }
                                     oldPath newPrePath = new oldPath();
                                     newPrePath.path.addAll(fixedPrePath.path);
                                     newPrePath.path.addAll(rawPrePath.path);
@@ -362,7 +392,10 @@ public class Analyzer<comparePathLength> {
 
                         for (oldPath prePath : newPrePaths) {
                             for (oldPath pumpPath : pumpPaths) {
-                                if (Thread.currentThread().isInterrupted()) return;
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 Enumerator preEnum = new Enumerator(prePath);
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
                                 if (dynamicValidate(preEnum, pumpEnum, "POA")) return;
@@ -374,6 +407,10 @@ public class Analyzer<comparePathLength> {
                         ArrayList<oldPath> headPaths = new ArrayList<oldPath>();
                         for (oldPath midp : midPaths) {
                             for (oldPath backp : backPaths) {
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 oldPath tmpPath = new oldPath();
                                 tmpPath.path.addAll(backp.path);
                                 tmpPath.path.addAll(midp.path);
@@ -384,6 +421,10 @@ public class Analyzer<comparePathLength> {
                         pumpPaths = new ArrayList<>();
                         for (int k = 0; k < frontPaths.size(); k++) {
                             for (int l = 0; l < tailPaths.size(); l++) {
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 // 两个路径集合中的路径两两配对，求重叠路径
                                 oldPath pumpPath = new oldPath();
                                 if (getPathTotalOverlap(frontPaths.get(k), headPaths.get(l), pumpPath)) {
@@ -397,6 +438,10 @@ public class Analyzer<comparePathLength> {
                         for (oldPath rawPrePath : OneLoopPrePaths.get(frontNode)) {
                             for (oldPath pumpPath : pumpPaths) {
                                 for (oldPath fixedPrePath : fixedPrePaths) {
+                                    if(Thread.currentThread().isInterrupted()){
+                                        System.out.println("线程请求中断...");
+                                        return;
+                                    }
                                     oldPath newPrePath = new oldPath();
                                     newPrePath.path.addAll(fixedPrePath.path);
                                     newPrePath.path.addAll(rawPrePath.path);
@@ -423,7 +468,10 @@ public class Analyzer<comparePathLength> {
 
                         for (oldPath prePath : newPrePaths) {
                             for (oldPath pumpPath : pumpPaths) {
-                                if (Thread.currentThread().isInterrupted()) return;
+                                if(Thread.currentThread().isInterrupted()){
+                                    System.out.println("线程请求中断...");
+                                    return;
+                                }
                                 Enumerator preEnum = new Enumerator(prePath);
                                 Enumerator pumpEnum = new Enumerator(pumpPath);
                                 if (dynamicValidate(preEnum, pumpEnum, "POA")) return;
@@ -455,7 +503,10 @@ public class Analyzer<comparePathLength> {
                 // }
                 for (oldPath pumpPath : OneLoopPumpPaths.get(node)) {
                     for (oldPath fixedPrePath : fixedPrePaths) {
-                        if (Thread.currentThread().isInterrupted()) return;
+                        if(Thread.currentThread().isInterrupted()){
+                            System.out.println("线程请求中断...");
+                            return;
+                        }
                         Enumerator preEnum = new Enumerator(fixedPrePath);
                         Enumerator pumpEnum = new Enumerator(pumpPath);
                         if (dynamicValidate(preEnum, pumpEnum, "SLQ")) return;
@@ -488,7 +539,10 @@ public class Analyzer<comparePathLength> {
                         if (getPathOverlaps(pumpPath, prePath, overlapPaths)) {
                             for (oldPath overlapPath : overlapPaths) {
                                 for (oldPath fixedPrePath : fixedPrePaths) {
-                                    if (Thread.currentThread().isInterrupted()) return;
+                                    if(Thread.currentThread().isInterrupted()){
+                                        System.out.println("线程请求中断...");
+                                        return;
+                                    }
                                     Enumerator preEnum = new Enumerator(fixedPrePath);
                                     Enumerator pumpEnum = new Enumerator(overlapPath);
                                     // Enumerator pumpEnum = new Enumerator(pumpPath);
