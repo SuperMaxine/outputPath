@@ -85,6 +85,18 @@ public class Analyzer<comparePathLength> {
             // printPaths(OneLoopPrePaths.get(node));
         }
 
+        // for (Pattern.Node node : OneLoopNodes) {
+        //     System.out.println(node.toString());
+        //     Collections.sort(OneLoopPumpPaths.get(node), new Comparator<oldPath>() {
+        //         @Override
+        //         public int compare(oldPath o1, oldPath o2) {
+        //             return o1.path.size() - o2.path.size();
+        //         }
+        //     });
+        //     printPaths(OneLoopPumpPaths.get(node));
+        // }
+        // System.out.println("----------");
+
         // TODO: 在后面的循环中加入判断 !Thread.currentThread().isInterrupted() 并return
 
         if (OneCounting) {
@@ -1347,7 +1359,8 @@ public class Analyzer<comparePathLength> {
             // 1. 0或1
             ArrayList<oldPath> tmpPath1 = new ArrayList<>();
             tmpPath1.add(path);
-            tmpPath1.addAll(retrunPaths(((Pattern.Ques) root).atom, new oldPath(), maxLength, endNode, type));
+            // tmpPath1.addAll(retrunPaths(((Pattern.Ques) root).atom, new oldPath(), maxLength, endNode, type));
+            tmpPath1.addAll(retrunPaths(((Pattern.Ques) root).atom, path, maxLength, endNode, type));
 
             // ArrayList<oldPath> tmpPath2 = new ArrayList<>();
             // tmpPath2.addAll(retrunPaths(((Pattern.Ques) root).atom, new oldPath(), maxLength, endNode, type));

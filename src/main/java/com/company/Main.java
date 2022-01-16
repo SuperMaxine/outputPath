@@ -59,21 +59,6 @@ public class Main {
         // testSingleRegex("`(?:\\\\[\\s\\S]|\\${(?:[^{}]|{(?:[^{}]|{[^}]*})*})+}|(?!\\${)[^\\\\`])*`"); //Exception in thread "main" regex.PatternSyntaxException: Illegal repetition near index 14
         // testSingleRegex("<\\/?(?!\\d)[^\\s>\\/=$<%]+(?:\\s(?:\\s*[^\\s>\\/=]+(?:\\s*=\\s*(?:\\\"[^\\\"]*\\\"|'[^']*'|[^\\s'\\\">=]+(?=[\\s>]))|(?=[\\s/>])))+)?\\s*\\/?>");
 
-        // testSingleRegex("ab|cd");
-        testDataSet("prism.txt");
-
-
-        // testSingleRegex("(\\(\\s*)(?!\\s)(?:[^()]|\\([^()]*\\))+(?=\\s*\\)\\s*=>) ");
-        // String file = "prism.txt";
-        // FileInputStream inputStream = null;
-        // try {
-        //     inputStream = new FileInputStream(file);
-        // } catch (FileNotFoundException e) {
-        //     e.printStackTrace();
-        // }
-        // BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        //
-        // Analyzer
 
         // Sola-da
         // testSingleRegex("\\s*\\n\\s*");
@@ -179,6 +164,10 @@ public class Main {
         // testSingleRegex("(\\()lambda\\s+\\((?:&?[-+*/_~!@$%^=<>{}\\w]+\\s*)*\\)");
         // testSingleRegex("^[A-Za-z][A-Za-z0-9+-.]*:\\/\\/");
         // testSingleRegex("^([a-z][a-z0-9.+-]*:)?(\\/\\/)?([\\\\/]+)?([\\S\\s]*)");
+
+
+        testSingleRegex("a(bc?|d)+");
+        // testDataSet("prism.txt");
     }
 
     private static void testSingleRegex(String regex) {
@@ -187,7 +176,7 @@ public class Main {
         new Analyzer().printPatternStruct(p.root);
         // log start time
         long startTime = System.currentTimeMillis();
-        Analyzer a = new Analyzer(p, 10, regex);
+        Analyzer a = new Analyzer(p, 4, regex);
         // log end time and print run time
         long endTime = System.currentTimeMillis();
         System.out.println(a.attackable);
