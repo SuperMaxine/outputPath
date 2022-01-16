@@ -166,7 +166,7 @@ public class Main {
         // testSingleRegex("^([a-z][a-z0-9.+-]*:)?(\\/\\/)?([\\\\/]+)?([\\S\\s]*)");
 
 
-        testSingleRegex("a(bc?|d)+");
+        testSingleRegex("^\\s+|\\s+$\n");
         // testDataSet("prism.txt");
     }
 
@@ -176,7 +176,7 @@ public class Main {
         new Analyzer().printPatternStruct(p.root);
         // log start time
         long startTime = System.currentTimeMillis();
-        Analyzer a = new Analyzer(p, 4, regex);
+        Analyzer a = new Analyzer(p, 9, regex);
         // log end time and print run time
         long endTime = System.currentTimeMillis();
         System.out.println(a.attackable);

@@ -56,17 +56,33 @@ public class Analyzer<comparePathLength> {
 
         searchOneLoopNode(pattern.root, true);
 
-
-        String regex = ".{1,3}";
-        Pattern p = Pattern.compile(regex);
-        generateCharSet((Pattern.CharProperty) ((Pattern.Curly) p.root.next).atom);
-        bigCharSetMap.put(((Pattern.Curly) p.root.next).atom, ((Pattern.CharProperty) ((Pattern.Curly) p.root.next).atom).charSet);
-        ((Pattern.CharProperty) ((Pattern.Curly) p.root.next).atom).charSet = new HashSet<>();
-
+        // 根节点直接接( | )节点，前缀加固定的"。{0，3}"
+        Pattern.Node tmpNode = pattern.root;
+        for ( ; ; ) {
+            if (tmpNode instanceof Pattern.Start ||
+                    tmpNode instanceof Pattern.Begin ||
+                    tmpNode instanceof Pattern.Caret ||
+                    tmpNode instanceof Pattern.UnixCaret ||
+                    tmpNode instanceof Pattern.GroupHead)
+            {
+                tmpNode = tmpNode.next;
+            }
+            else {
+                break;
+            }
+        }
+        if (tmpNode instanceof Pattern.Branch) {
+            String regex = ".{1,3}";
+            Pattern p = Pattern.compile(regex);
+            generateCharSet((Pattern.CharProperty) ((Pattern.Curly) p.root.next).atom);
+            bigCharSetMap.put(((Pattern.Curly) p.root.next).atom, ((Pattern.CharProperty) ((Pattern.Curly) p.root.next).atom).charSet);
+            ((Pattern.CharProperty) ((Pattern.Curly) p.root.next).atom).charSet = new HashSet<>();
+            generateAllBigCharSet();
+            fixedPrePaths.addAll(retrunPaths(p.root, new oldPath(), 9, p.root.next.next.next, returnPathsType.pump));
+        }
         // Done:关于压缩字符集，目前会在returnPaths中重复生成，考虑直接使用node.charSet，待优化
-        generateAllBigCharSet();
-        if (pattern.root.next instanceof Pattern.Branch) {
-            fixedPrePaths = retrunPaths(p.root, new oldPath(), 3, p.root.next.next.next, returnPathsType.pump);
+        else {
+            generateAllBigCharSet();
         }
 
 
@@ -731,8 +747,8 @@ public class Analyzer<comparePathLength> {
                 //     System.out.println("aaa");
                 double matchingStepCnt;
                 if ("SLQ".equals(type))
-                    matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
-                else matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
+                    matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
+                else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
                 // System.out.println(matchingStepCnt);
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
@@ -752,8 +768,8 @@ public class Analyzer<comparePathLength> {
                     // System.out.println(pre + pump);
                     double matchingStepCnt;
                     if ("SLQ".equals(type))
-                        matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
-                    else matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
+                        matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
+                    else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
                     // System.out.println(matchingStepCnt);
                     if (matchingStepCnt > 1e6) {
                         // System.out.println("matchingStepCnt > 1e5");
