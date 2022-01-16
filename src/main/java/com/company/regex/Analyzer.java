@@ -1040,18 +1040,21 @@ public class Analyzer<comparePathLength> {
         if (root == null || path.reachEnd || (root instanceof Pattern.GroupTail && root.next instanceof Pattern.Loop)) {
             result.add(path);
             return result;
-        } else if (root instanceof Pattern.LastNode) {
+        }
+        else if (root instanceof Pattern.LastNode) {
             path.reachEnd = true;
             result.add(path);
             return result;
-        } else if (root == endNode) {
+        }
+        else if (root == endNode) {
             path.reachEnd = true;
             result.add(path);
             if (type == returnPathsType.pre) {
                 OneLoopPrePaths.get(endNode).add(path);
             }
             return result;
-        } else if (path.path.size() > maxLength) {
+        }
+        else if (path.path.size() > maxLength) {
             return result;
         }
 
@@ -1059,7 +1062,8 @@ public class Analyzer<comparePathLength> {
         // 1. 循环
         if (root instanceof Pattern.Prolog) {
             result.addAll(retrunPaths(((Pattern.Prolog) root).loop, path, maxLength, endNode, type));
-        } else if (root instanceof Pattern.Loop) {
+        }
+        else if (root instanceof Pattern.Loop) {
             int limit = maxLength;
 
             ArrayList<oldPath> nextPaths = new ArrayList<>();
@@ -1075,6 +1079,13 @@ public class Analyzer<comparePathLength> {
             // System.out.println("-----------------------");
 
             // ArrayList<oldPath> lastPaths = new ArrayList<>(thisCyclePath);
+            /*
+            循环结构的循环次数被存在当前Node节点的cmin和cmax中
+            首先生成“前缀路径+循环路径*cmin"作为第一部分
+            然后在第一部分后分别拼接”循环路径*循环次数+后缀路径“（cmin < 循环次数 + cmin < cmax）
+            即可获得经过当前节点的所有路径
+             */
+
             ArrayList<oldPath> lastPaths = new ArrayList<>();
             lastPaths.add(path);
             for (int loopTime = 0; loopTime < ((Pattern.Loop) root).cmin; loopTime++) {
@@ -1142,7 +1153,8 @@ public class Analyzer<comparePathLength> {
             }
             // System.out.println("in Lazy Loop");
             // printPaths(result);
-        } else if (root instanceof Pattern.Curly) {
+        }
+        else if (root instanceof Pattern.Curly) {
             int limit = maxLength;
 
             ArrayList<oldPath> nextPaths = new ArrayList<>();
@@ -1218,7 +1230,8 @@ public class Analyzer<comparePathLength> {
                 }
             }
 
-        } else if (root instanceof Pattern.GroupCurly) {
+        }
+        else if (root instanceof Pattern.GroupCurly) {
             int limit = maxLength;
 
             ArrayList<oldPath> nextPaths = new ArrayList<>();
@@ -1296,6 +1309,12 @@ public class Analyzer<comparePathLength> {
         }
 
         // 2. 分支
+        /*
+        分支结构的生成共有两种情况
+        1. 正则表达式r?
+        - 当r的内容比较简单时，会生成一个Ques节点，分支内容在
+        2. 正则表达式a|b
+         */
         else if (root instanceof Pattern.Branch) {
             if (((Pattern.Branch) root).getSize() == 1) {
                 // Done：Ques作Branch的正确逻辑应该如下注释，先不改，等测试
@@ -1319,9 +1338,11 @@ public class Analyzer<comparePathLength> {
                     result.addAll(retrunPaths(node, path, maxLength, endNode, type));
                 }
             }
-        } else if (root instanceof Pattern.BranchConn) {
+        }
+        else if (root instanceof Pattern.BranchConn) {
             result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
-        } else if (root instanceof Pattern.Ques) {
+        }
+        else if (root instanceof Pattern.Ques) {
             // TODO: 几种type并未区分
             // 1. 0或1
             ArrayList<oldPath> tmpPath1 = new ArrayList<>();
@@ -1340,7 +1361,8 @@ public class Analyzer<comparePathLength> {
             for (oldPath p : tmpPath1) {
                 result.addAll(retrunPaths(root.next, p, maxLength, endNode, type));
             }
-        } else if (root instanceof Pattern.Conditional) {
+        }
+        else if (root instanceof Pattern.Conditional) {
             throw new RuntimeException("Pattern.Conditional not supported, please tell me which regex contains it.");
         }
 
@@ -1353,14 +1375,16 @@ public class Analyzer<comparePathLength> {
             // path.path.add(new HashSet<>(((Pattern.CharProperty) root).charSet));
             path.path.add(((Pattern.CharProperty) root).charSet);
             result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
-        } else if (root instanceof Pattern.SliceNode) {
+        }
+        else if (root instanceof Pattern.SliceNode) {
             for (int i : ((Pattern.SliceNode) root).buffer) {
                 Set<Integer> tmpCharSet = new HashSet<>();
                 tmpCharSet.add(i);
                 path.path.add(tmpCharSet);
             }
             result.addAll(retrunPaths(root.next, path, maxLength, endNode, type));
-        } else if (root instanceof Pattern.BnM) {
+        }
+        else if (root instanceof Pattern.BnM) {
             for (int i : ((Pattern.BnM) root).buffer) {
                 Set<Integer> tmpCharSet = new HashSet<>();
                 tmpCharSet.add(i);
@@ -1710,7 +1734,7 @@ public class Analyzer<comparePathLength> {
         Set<Integer> word = getNodeCharSet(wordP.root.next);
 
         for (oldPath p : paths) {
-            if (p.path.size() != 2) continue;
+            // if (p.path.size() != 2) continue;
             // System.out.println("----");
             int indexP = 0;
             for (Set<Integer> s : p.path) {
