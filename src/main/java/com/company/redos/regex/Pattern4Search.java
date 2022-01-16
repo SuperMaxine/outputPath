@@ -5942,7 +5942,12 @@ public final class Pattern4Search implements java.io.Serializable {
     }
 
     public int getMatchingStepCnt(String prefix, String pump, String suffix, int max_length, int threshold) {   // 修改
-        String repeated = new String(new char[max_length]).replace("\0", pump);
+        // String repeated = new String(new char[max_length]).replace("\0", pump);
+        String repeated = "";
+        for (int i = 0; i < max_length && repeated.length() < max_length; i++) {
+            repeated += pump;
+        }
+
         String attack_string = prefix + repeated + suffix;
 
         // System.out.println("attack_string: " );

@@ -153,7 +153,7 @@ public class Analyzer<comparePathLength> {
                                         // System.out.println(pump);
                                         // if (pump.equals("aaa"))
                                         //     System.out.println("aaa");
-                                        double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 10000000);
+                                        double matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", 50, 100000);
                                         // System.out.println(matchingStepCnt);
                                         // if (pump.equals("abca"))
                                         //     System.out.println("abca");
@@ -171,7 +171,7 @@ public class Analyzer<comparePathLength> {
                                             // System.out.println("brfore next");
                                             String pump = pumpEnum.next();
                                             // System.out.println(pre + pump);
-                                            double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 10000000);
+                                            double matchingStepCnt = testPattern.getMatchingStepCnt(pre, pump, "\\b", 50, 100000);
                                             // System.out.println(matchingStepCnt);
                                             if(Thread.currentThread().isInterrupted()){
                                                 System.out.println("线程请求中断...");
@@ -653,9 +653,9 @@ public class Analyzer<comparePathLength> {
     private boolean dynamicValidate(Enumerator preEnum, Enumerator pumpEnum, String type) {
         int max_length = 500;
         if ("POA".equals(type)) {
-            max_length = 10000;
+            max_length = 30000;
         } else if ("SLQ".equals(type)) {
-            max_length = 200000;
+            max_length = 30000;
         }
         if (preEnum.Empty()) {
             while (pumpEnum.hasNext()) {
@@ -665,8 +665,8 @@ public class Analyzer<comparePathLength> {
                 //     System.out.println("aaa");
                 double matchingStepCnt;
                 if ("SLQ".equals(type))
-                    matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
-                else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
+                    matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
+                else matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
                 // System.out.println(matchingStepCnt);
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
@@ -686,8 +686,8 @@ public class Analyzer<comparePathLength> {
                     // System.out.println(pre + pump);
                     double matchingStepCnt;
                     if ("SLQ".equals(type))
-                        matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
-                    else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 10000000);
+                        matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
+                    else matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
                     // System.out.println(matchingStepCnt);
                     if (matchingStepCnt > 1e6) {
                         // System.out.println("matchingStepCnt > 1e5");
