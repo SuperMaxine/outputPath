@@ -3402,6 +3402,8 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
      * always returns true.
      */
     public static class Node extends Object {
+        int beginFlag;
+        int endFlag;
         Node next;
         Node() {
             next = Pattern.accept;

@@ -166,8 +166,9 @@ public class Main {
         // testSingleRegex("^([a-z][a-z0-9.+-]*:)?(\\/\\/)?([\\\\/]+)?([\\S\\s]*)");
 
 
-        testSingleRegex("(a+|b)+");
+        testSingleRegex("^[^\\s>\\/:]+:");
         // testDataSet("prism.txt");
+        // testDataSet("prism_981.txt");
     }
 
     private static void testSingleRegex(String regex) {
@@ -176,7 +177,7 @@ public class Main {
         new Analyzer().printPatternStruct(p.root);
         // log start time
         long startTime = System.currentTimeMillis();
-        Analyzer a = new Analyzer(p, 9, regex);
+        Analyzer a = new Analyzer(p, 10, regex);
         // log end time and print run time
         long endTime = System.currentTimeMillis();
         System.out.println(a.attackable);
@@ -197,6 +198,7 @@ public class Main {
         }
 
         ExecutorService es;
+        // int count = 981;
         int count = 1;
         String str = null;
         while (true) {
@@ -260,7 +262,7 @@ public class Main {
         try {
             future = exec.submit(call);
             //返回值类型为限制的方法的返回值类型
-            attackMsg = future.get(1000 * 30, TimeUnit.MILLISECONDS); //任务处理超时时间设为 5 秒
+            attackMsg = future.get(1000 * 60, TimeUnit.MILLISECONDS); //任务处理超时时间设为 5 秒
 
             result += "id:" + id + "\n" + regex + "\n" + attackMsg.attackable + "\n" + attackMsg.attackMsg + "\n\n";
         } catch (TimeoutException ex) {

@@ -106,10 +106,10 @@ public class Analyzer<comparePathLength> {
             // printPaths(OneLoopPrePaths.get(node));
         }
 
-        for (Pattern.Node node : countingNodes) {
-            boolean couldHaveNoSuffix = couldHaveNoSuffix(node);
-            System.out.println("couldHaveNoSuffix: " + couldHaveNoSuffix);
-        }
+        // for (Pattern.Node node : countingNodes) {
+        //     boolean couldHaveNoSuffix = couldHaveNoSuffix(node);
+        //     System.out.println("couldHaveNoSuffix: " + couldHaveNoSuffix);
+        // }
 
         // for (Pattern.Node node : OneLoopNodes) {
         //     System.out.println(node.toString());
@@ -199,6 +199,7 @@ public class Analyzer<comparePathLength> {
                                         // if (pump.equals("abca"))
                                         //     System.out.println("abca");
                                         if (matchingStepCnt > 1e5) {
+                                            System.out.println(matchingStepCnt);
                                             attackable = true;
                                             attackMsg = "OneCounting\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                                             return;
@@ -219,6 +220,7 @@ public class Analyzer<comparePathLength> {
                                                 return;
                                             }
                                             if (matchingStepCnt > 1e5) {
+                                                System.out.println(matchingStepCnt);
                                                 attackable = true;
                                                 attackMsg = "OneCounting\nprefix:" + pre + "\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                                                 return;
@@ -604,6 +606,10 @@ public class Analyzer<comparePathLength> {
         // System.out.println("[*] Analyzer done");
     }
 
+    private ArrayList<oldPath> preCompile() {
+
+    }
+
     // 用于判断counting后缀是否可空，可空则不进行SLQ判断
     private boolean couldHaveNoSuffix(Pattern.Node root) {
         // 如果走到分支末尾，说明该分支可空
@@ -842,6 +848,7 @@ public class Analyzer<comparePathLength> {
                 // if (pump.equals("abca"))
                 //     System.out.println("abca");
                 if (matchingStepCnt > 1e5) {
+                    System.out.println(matchingStepCnt);
                     attackable = true;
                     attackMsg = type + "\nprefix:\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                     return true;
@@ -860,8 +867,9 @@ public class Analyzer<comparePathLength> {
                         matchingStepCnt = testPattern4Search.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
                     else matchingStepCnt = testPattern.getMatchingStepCnt("", pump, "\\b", max_length, 100000);
                     // System.out.println(matchingStepCnt);
-                    if (matchingStepCnt > 1e6) {
+                    if (matchingStepCnt > 1e5) {
                         // System.out.println("matchingStepCnt > 1e5");
+                        System.out.println(matchingStepCnt);
                         attackable = true;
                         attackMsg = type + "\nprefix:" + pre + "\n" + "pump:" + pump + "\nsuffix:\\n\\b\\n";
                         return true;
