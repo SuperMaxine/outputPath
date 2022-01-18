@@ -166,7 +166,10 @@ public class Main {
         // testSingleRegex("^([a-z][a-z0-9.+-]*:)?(\\/\\/)?([\\\\/]+)?([\\S\\s]*)");
 
 
-        testSingleRegex("^[^\\s>\\/:]+:");
+        // testSingleRegex("[ab](ca{1,2}da)+");
+        // testSingleRegex("^[^\\s>\\/:]+:");
+        // testSingleRegex("([\\\"'])(?:\\\\(?:\\r\\n|[\\s\\S])|(?!\\1)[^\\\\\\r\\n])*\\1");
+        testSingleRegex("(\\b(?:class|interface|extends|implements|trait|instanceof|new)\\s+|\\bcatch\\s+\\()[\\w.\\\\]+"); // 重叠路径生成的有问题
         // testDataSet("prism.txt");
         // testDataSet("prism_981.txt");
     }

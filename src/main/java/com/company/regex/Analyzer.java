@@ -576,7 +576,8 @@ public class Analyzer<comparePathLength> {
             }
 
             //SLQ2
-            for (Pattern.Node node : countingNodes) {
+            // for (Pattern.Node node : countingNodes) {
+            for (Pattern.Node node : allCountingAtBegin) {
                 if (couldHaveNoSuffix(node)) {
                     // 如果没有后缀，则不需要检查
                     continue;
@@ -584,7 +585,8 @@ public class Analyzer<comparePathLength> {
                 for (oldPath prePath : countingPrePaths.get(node)) {
                     for (oldPath pumpPath : countingPumpPaths.get(node)) {
                         ArrayList<oldPath> overlapPaths = new ArrayList<>();
-                        if (getPathOverlaps(pumpPath, prePath, overlapPaths)) {
+                        // if (getPathOverlaps(pumpPath, prePath, overlapPaths)) {
+                        if (isPath2InPath1(pumpPath, prePath, overlapPaths)) {
                             for (oldPath overlapPath : overlapPaths) {
                                 for (oldPath fixedPrePath : fixedPrePaths) {
                                     if(Thread.currentThread().isInterrupted()){
@@ -606,9 +608,9 @@ public class Analyzer<comparePathLength> {
         // System.out.println("[*] Analyzer done");
     }
 
-    private ArrayList<oldPath> preCompile() {
-
-    }
+    // private ArrayList<oldPath> preCompile() {
+    //
+    // }
 
     // 用于判断counting后缀是否可空，可空则不进行SLQ判断
     private boolean couldHaveNoSuffix(Pattern.Node root) {
@@ -814,12 +816,55 @@ public class Analyzer<comparePathLength> {
                         charSet1.add(tmpCharSet);
                     }
                 }
+                
                 for (int j = path2.path.size(); j < path1.path.size(); j++) {
                     charSet1.add(new HashSet<>(path1.path.get(j)));
                 }
                 oldPath tmpPath = new oldPath();
                 tmpPath.path = charSet1;
                 result.add(tmpPath);
+            }
+
+            if (result.size() > 0) return true;
+        }
+        return false;
+    }
+
+    boolean isPath2InPath1(oldPath path1, oldPath path2, ArrayList<oldPath> result) {
+        // 默认path1是大串，path2是小串，如果path1.path.size() < path2.path.size()，return false
+        if (path1.path.size() < path2.path.size()) {
+            return false;
+        } else {
+            // ArrayList<oldPath> result = new ArrayList<>();
+            // 对path1.path滑动窗口，从开始到path1.path.size() - path2.path.size()，每次滑动一位
+            for (int i = 0; i < path1.path.size() - path2.path.size() + 1; i++) {
+                // 对每一个滑动窗口，比较每一个节点的字符集
+                ArrayList<Set<Integer>> charSet1 = new ArrayList<>();
+                boolean path2InPath1 = true;
+                for (int j = 0; j < path2.path.size(); j++) {
+                    Set<Integer> tmpCharSet = new HashSet<>();
+                    tmpCharSet.addAll(path1.path.get(i + j));
+                    tmpCharSet.retainAll(path2.path.get(j));
+                    if (tmpCharSet.size() == 0) {
+                        path2InPath1 = false;
+                        break;
+                    } else {
+                        charSet1.add(tmpCharSet);
+                    }
+                }
+
+                if (path2InPath1) {
+                    for (int j = path2.path.size(); j < path1.path.size(); j++) {
+                        charSet1.add(new HashSet<>(path1.path.get(j)));
+                    }
+                    // ArrayList<Set<Integer>> charSet2 = new ArrayList<>();
+                    oldPath tmpResult = new oldPath();
+                    for (int j = 0; j < i; j++) {
+                        tmpResult.path.add(new HashSet<>(path1.path.get(j)));
+                    }
+                    tmpResult.path.addAll(charSet1);
+                    result.add(tmpResult);
+                }
             }
 
             if (result.size() > 0) return true;
@@ -1969,7 +2014,7 @@ public class Analyzer<comparePathLength> {
         pump, pre
     }
 
-    public static class oldPath {
+    public class oldPath {
         public boolean reachEnd;
         public ArrayList<Set<Integer>> path;
         public ArrayList<Set<Integer>> negPath; // negPath长于path是可以的,实际上最末尾的negPath并没有生效，直接扣会导致扣多，但结果至少是正确的
